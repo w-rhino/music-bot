@@ -1,1 +1,1 @@
-discordbot: python DiceRoll.py
+DiceRoll: python DiceRoll.py
