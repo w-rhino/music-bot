@@ -1,26 +1,15 @@
 # インストールした discord.py を読み込む
-import discord
-
-# トークン代入用ライブラリ
+from discord.ext import commands
 import os
-
-# Jupyter用のエラー回避ライブラリ
-import asyncio
-import nest_asyncio
+import traceback
 
 #正規表現用ライブラリ
 import re
-
 import random
 
-# エラー回避ライブラリの適用
-nest_asyncio.apply()
+bot = commands.Bot(command_prefix='$')
+token = os.environ['DISCORD_BOT_TOKEN']
 
-# 自分のBotのアクセストークンに置き換えてください
-TOKEN = os.environ['DISCORD_BOT_TOKEN']
-
-# 接続に必要なオブジェクトを生成
-client = discord.Client()
 
 #ダイス用正規表現
 pattern = '\$\d{1,3}d\d{1,3}|\$\d{1,3}D\d{1,3}'
@@ -68,14 +57,12 @@ def nDn(text):
     else:
         return None
 
-
-
-# 起動時に動作する処理
-@client.event
-async def on_ready():
-    # 起動したらターミナルにログイン通知が表示される
-    print('ログインしました')
-
+@bot.event
+async def on_command_error(ctx, error):
+    orig_error = getattr(error, "original", error)
+    error_msg = ''.join(traceback.TracebackException.from_exception(orig_error).format())
+    await ctx.send(error_msg)
+    
 # メッセージ受信時に動作する処理
 @client.event
 async def on_message(message):
@@ -88,5 +75,8 @@ async def on_message(message):
     if result is not None:
         await message.channel.send(message.author.name + 'さんのダイスロール\n' + result)
 
-# Botの起動とDiscordサーバーへの接続
-client.run(TOKEN)
+@bot.command()
+async def ping(ctx):
+    await ctx.send('pong')
+
+bot.run(token)
