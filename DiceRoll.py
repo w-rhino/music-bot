@@ -64,7 +64,7 @@ async def on_command_error(ctx, error):
     await ctx.send(error_msg)
     
 # メッセージ受信時に動作する処理
-@.event
+@bot.event
 async def on_message(message):
     # メッセージ送信者がBotだった場合は無視する
     if message.author.bot:
