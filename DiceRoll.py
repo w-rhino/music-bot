@@ -60,7 +60,7 @@ def nDn(text):
         return None
 
 # 自分のBotのアクセストークンに置き換えてください
-TOKEN = 'NzcwOTA3ODczMjYwNjAxMzY0.X5kZ5w.fFRwKmAUm6S-qGOAbC0YdJUz0y4'
+TOKEN = os.environ['DISCORD_BOT_TOKEN']
 
 # 接続に必要なオブジェクトを生成
 client = discord.Client()
