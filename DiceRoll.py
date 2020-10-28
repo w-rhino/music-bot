@@ -1,6 +1,9 @@
 # インストールした discord.py を読み込む
 import discord
 
+# トークン代入用ライブラリ
+import os
+
 # Jupyter用のエラー回避ライブラリ
 import asyncio
 import nest_asyncio
@@ -12,6 +15,12 @@ import random
 
 # エラー回避ライブラリの適用
 nest_asyncio.apply()
+
+# 自分のBotのアクセストークンに置き換えてください
+TOKEN = os.environ['DISCORD_BOT_TOKEN']
+
+# 接続に必要なオブジェクトを生成
+client = discord.Client()
 
 #ダイス用正規表現
 pattern = '\$\d{1,3}d\d{1,3}|\$\d{1,3}D\d{1,3}'
@@ -59,11 +68,7 @@ def nDn(text):
     else:
         return None
 
-# 自分のBotのアクセストークンに置き換えてください
-TOKEN = os.environ['DISCORD_BOT_TOKEN']
 
-# 接続に必要なオブジェクトを生成
-client = discord.Client()
 
 # 起動時に動作する処理
 @client.event
