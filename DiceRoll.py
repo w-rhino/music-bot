@@ -71,14 +71,28 @@ async def on_command_error(ctx, error):
     await ctx.send(error_msg)
 
 @bot.command()
+async def r(ctx):
+    num, times, result, sum_dice = nDn('2D6')
+    if result is not None:
+            await ctx.send(ctx.author.name + 'さんのダイスロール\n' + num + '面ダイスを' + times + '回振ります。\n出目：' + str(result) + '\n合計：' + str(sum_dice))
+
+@bot.command()
 async def r(ctx, arg):
-    if arg is None:
-        arg = '2D6'
     num, times, result, sum_dice = nDn(arg)
     if result is not None:
             await ctx.send(ctx.author.name + 'さんのダイスロール\n' + num + '面ダイスを' + times + '回振ります。\n出目：' + str(result) + '\n合計：' + str(sum_dice))
 
-    
+ @bot.command()
+async def roll(ctx):
+    num, times, result, sum_dice = nDn('2D6')
+    if result is not None:
+            await ctx.send(ctx.author.name + 'さんのダイスロール\n' + num + '面ダイスを' + times + '回振ります。\n出目：' + str(result) + '\n合計：' + str(sum_dice))
+
+@bot.command()
+async def roll(ctx, arg):
+    num, times, result, sum_dice = nDn(arg)
+    if result is not None:
+            await ctx.send(ctx.author.name + 'さんのダイスロール\n' + num + '面ダイスを' + times + '回振ります。\n出目：' + str(result) + '\n合計：' + str(sum_dice))   
     
 @bot.command()
 async def ping(ctx):
@@ -86,8 +100,8 @@ async def ping(ctx):
 
 @bot.command()
 async def power(ctx, value):
-    num, times, result, sum_dice = nDn('\$2D6')
-    v = int(value)/5
+    num, times, result, sum_dice = nDn('2D6')
+    v = int(int(value)/5)
     pwr = lst[v][sum_dice]
     if pwr == 127: pwr = 'ファンブル！'
     await ctx.send('出目：' + str(result) + '威力：' + pwr)
