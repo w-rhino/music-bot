@@ -10,6 +10,7 @@ import random
 #csv読み込みライブラリ
 import csv
 
+#威力表読み込み
 with open('./sw25_power.csv', newline='') as csvfile:
     read = csv.reader(csvfile)
     lst = [row for row in read]
@@ -96,18 +97,18 @@ async def roll(ctx, *args):
 async def p(ctx, value):
     num, times, result, sum_dice = nDn('2D6')
     v = int(int(value)/5)
-    pwr = lst[v][sum_dice - 1]
-    if pwr == 127: 
-        str(pwr) = 'ファンブル！'
-    await ctx.send('出目：' + str(result) + '\n威力：' + str(pwr))
+    pwr = str(lst[v][sum_dice - 1])
+    if pwr == '127': 
+        pwr = 'ファンブル！'
+    await ctx.send('出目：' + str(result) + '\n威力：' + pwr)
 
 @bot.command()
 async def power(ctx, value):
     num, times, result, sum_dice = nDn('2D6')
     v = int(int(value)/5)
-    pwr = lst[v][sum_dice - 1]
-    if pwr == 127: 
-        str(pwr) = 'ファンブル！'
-    await ctx.send('出目：' + str(result) + '\n威力：' + str(pwr))
+    pwr = str(lst[v][sum_dice - 1])
+    if pwr == '127': 
+        pwr = 'ファンブル！'
+    await ctx.send('出目：' + str(result) + '\n威力：' + pwr)
     
 bot.run(token)
