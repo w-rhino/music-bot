@@ -22,11 +22,11 @@ async def on_message(message):
     if message.author.bot:
         return
     # ダイスロール処理
-    if judge_nDn(message.content):
-        msg = message.content
-        num, times, result, sum_dice = nDn(msg)
-        if result is not None:
-            await message.channel.send(message.author.name + 'さんのダイスロール\n' + num + '面ダイスを' + times + '回振ります。\n出目：' + str(result) + '\n合計：' + str(sum_dice))
+    #if judge_nDn(message.content):
+    msg = message.content
+    num, times, result, sum_dice = nDn(msg)
+    if result is not None:
+        await message.channel.send(message.author.name + 'さんのダイスロール\n' + num + '面ダイスを' + times + '回振ります。\n出目：' + str(result) + '\n合計：' + str(sum_dice))
 
 @bot.command()
 async def ping(ctx):
