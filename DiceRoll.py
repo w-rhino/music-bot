@@ -70,6 +70,14 @@ async def on_command_error(ctx, error):
     orig_error = getattr(error, "original", error)
     error_msg = ''.join(traceback.TracebackException.from_exception(orig_error).format())
     await ctx.send(error_msg)
+
+@bot.command()
+async def r(ctx, arg)
+    num, times, result, sum_dice = nDn(arg)
+    if result is not None:
+            await message.channel.send(message.author.name + 'さんのダイスロール\n' + num + '面ダイスを' + times + '回振ります。\n出目：' + str(result) + '\n合計：' + str(sum_dice))
+
+    
     
 @bot.command()
 async def ping(ctx):
@@ -84,16 +92,16 @@ async def power(ctx, value):
     await ctx.send('出目：' + str(result) + '威力：' + pwr)
     
 # メッセージ受信時に動作する処理
-@bot.event
-async def on_message(message):
-    # メッセージ送信者がBotだった場合は無視する
-    if message.author.bot:
-        return
-    # ダイスロール処理
-    if judge_nDn(message.content):
-        msg = message.content
-        num, times, result, sum_dice = nDn(msg)
-        if result is not None:
-            await message.channel.send(message.author.name + 'さんのダイスロール\n' + num + '面ダイスを' + times + '回振ります。\n出目：' + str(result) + '\n合計：' + str(sum_dice))
+#@bot.event
+#async def on_message(message):
+#    # メッセージ送信者がBotだった場合は無視する
+#    if message.author.bot:
+#        return
+#    # ダイスロール処理
+#    if judge_nDn(message.content):
+#       msg = message.content
+#        num, times, result, sum_dice = nDn(msg)
+#        if result is not None:
+#            await message.channel.send(message.author.name + 'さんのダイスロール\n' + num + '面ダイスを' + times + '回振ります。\n出目：' + str(result) + '\n合計：' + str(sum_dice))
 
 bot.run(token)
