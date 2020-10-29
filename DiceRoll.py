@@ -97,7 +97,8 @@ async def p(ctx, value):
     num, times, result, sum_dice = nDn('2D6')
     v = int(int(value)/5)
     pwr = lst[v][sum_dice - 1]
-    if pwr == 127: pwr = 'ファンブル！'
+    if pwr == 127: 
+        pwr = 'ファンブル！'
     await ctx.send('出目：' + str(result) + '\n威力：' + pwr)
 
 @bot.command()
@@ -105,7 +106,8 @@ async def power(ctx, value):
     num, times, result, sum_dice = nDn('2D6')
     v = int(int(value)/5)
     pwr = lst[v][sum_dice - 1]
-    if pwr == 127: pwr = 'ファンブル！'
+    if pwr == 127: 
+        pwr = 'ファンブル！'
     await ctx.send('出目：' + str(result) + '\n威力：' + pwr)
     
 bot.run(token)
