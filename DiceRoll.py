@@ -18,7 +18,7 @@ with open('./sw25_power.csv', newline='') as csvfile:
 # nDnダイスモジュール
 
 #ダイス用正規表現
-pattern = '\$\d{1,3}d\d{1,3}|\$\d{1,3}D\d{1,3}'
+pattern = '\d{1,3}d\d{1,3}|\d{1,3}D\d{1,3}'
 split_pattern = 'd|D'
 
 #入力した文字がnDnに合致するか
@@ -31,8 +31,7 @@ def judge_nDn(src):
 
 #nDnの数字を前半と後半に分ける
 def split_nDn(src):
-    src2 = re.sub('\$','',src)
-    return re.split(split_pattern,src2)
+    return re.split(split_pattern,src)
 
 #ダイスロール
 def roll_nDn(src):
@@ -58,7 +57,7 @@ def nDn(text):
         spl = split_nDn(text)
         return spl[1],spl[0],result,sum_dice
     else:
-        return None
+        return 0,0,result,0
     
 ####################
 
