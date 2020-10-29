@@ -57,7 +57,7 @@ def nDn(text):
         spl = split_nDn(text)
         return spl[1],spl[0],result,sum_dice
     else:
-        return 0,0,result,0
+        return 0,0,[],0
     
 ####################
 
@@ -72,6 +72,8 @@ async def on_command_error(ctx, error):
 
 @bot.command()
 async def r(ctx, arg):
+    if arg is None:
+        arg = '2D6'
     num, times, result, sum_dice = nDn(arg)
     if result is not None:
             await ctx.send(ctx.author.name + 'さんのダイスロール\n' + num + '面ダイスを' + times + '回振ります。\n出目：' + str(result) + '\n合計：' + str(sum_dice))
