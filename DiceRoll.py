@@ -7,6 +7,14 @@ import traceback
 import re
 import random
 
+#csv読み込みライブラリ
+import csv
+
+with open('./sw25_power.csv', newline='') as csvfile:
+read = csv.reader(csvfile)
+lst = [row for row in read]
+
+
 # nDnダイスモジュール
 
 #ダイス用正規表現
@@ -63,6 +71,19 @@ async def on_command_error(ctx, error):
     error_msg = ''.join(traceback.TracebackException.from_exception(orig_error).format())
     await ctx.send(error_msg)
     
+@bot.command()
+async def ping(ctx):
+    await ctx.send('pong')
+
+@bot.command()
+async def power(ctx, value):
+    num, times, result, sum_dice = nDn('\$2D6')
+    v = value/5
+    pwr = lst[v][sum_dice]
+    if pwr == 127:
+        pwr = 'ファンブル！'
+    await ctx.send('出目：' + str(result) + '威力：'pwr)
+    
 # メッセージ受信時に動作する処理
 @bot.event
 async def on_message(message):
@@ -75,9 +96,5 @@ async def on_message(message):
         num, times, result, sum_dice = nDn(msg)
         if result is not None:
             await message.channel.send(message.author.name + 'さんのダイスロール\n' + num + '面ダイスを' + times + '回振ります。\n出目：' + str(result) + '\n合計：' + str(sum_dice))
-
-@bot.command()
-async def ping(ctx):
-    await ctx.send('pong')
 
 bot.run(token)
