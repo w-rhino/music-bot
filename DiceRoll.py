@@ -74,7 +74,7 @@ async def on_command_error(ctx, error):
 async def r(ctx, arg):
     num, times, result, sum_dice = nDn(arg)
     if result is not None:
-            await message.channel.send(message.author.name + 'さんのダイスロール\n' + num + '面ダイスを' + times + '回振ります。\n出目：' + str(result) + '\n合計：' + str(sum_dice))
+            await ctx.send(ctx.author.name + 'さんのダイスロール\n' + num + '面ダイスを' + times + '回振ります。\n出目：' + str(result) + '\n合計：' + str(sum_dice))
 
     
     
