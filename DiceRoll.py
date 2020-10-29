@@ -2,6 +2,7 @@
 from discord.ext import commands
 import os
 import traceback
+import re
 
 # nDnダイスを呼び出す
 import nDnDICE
