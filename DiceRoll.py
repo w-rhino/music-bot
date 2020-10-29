@@ -98,8 +98,8 @@ async def p(ctx, value):
     v = int(int(value)/5)
     pwr = lst[v][sum_dice - 1]
     if pwr == 127: 
-        pwr = 'ファンブル！'
-    await ctx.send('出目：' + str(result) + '\n威力：' + pwr)
+        str(pwr) = 'ファンブル！'
+    await ctx.send('出目：' + str(result) + '\n威力：' + str(pwr))
 
 @bot.command()
 async def power(ctx, value):
@@ -107,7 +107,7 @@ async def power(ctx, value):
     v = int(int(value)/5)
     pwr = lst[v][sum_dice - 1]
     if pwr == 127: 
-        pwr = 'ファンブル！'
-    await ctx.send('出目：' + str(result) + '\n威力：' + pwr)
+        str(pwr) = 'ファンブル！'
+    await ctx.send('出目：' + str(result) + '\n威力：' + str(pwr))
     
 bot.run(token)
