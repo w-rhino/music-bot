@@ -6,7 +6,6 @@ import traceback
 # nDnダイスを呼び出す
 import nDnDICE
 
-
 bot = commands.Bot(command_prefix='$')
 token = os.environ['DISCORD_BOT_TOKEN']
 
@@ -25,9 +24,9 @@ async def on_message(message):
     # ダイスロール処理
     if message.content == '\$\d{1,3}d\d{1,3}|\$\d{1,3}D\d{1,3}'
         msg = message.content
-        num, times, result, sum = nDn(msg)
+        num, times, result, sum_dice = nDn(msg)
         if result is not None:
-            await message.channel.send(message.author.name + 'さんのダイスロール\n' + num + '面ダイスを' + times + '回振ります。\n出目：' + str(result) + '\n合計：' + str(sum))
+            await message.channel.send(message.author.name + 'さんのダイスロール\n' + num + '面ダイスを' + times + '回振ります。\n出目：' + str(result) + '\n合計：' + str(sum_dice))
 
 @bot.command()
 async def ping(ctx):
