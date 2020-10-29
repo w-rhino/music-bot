@@ -2,7 +2,6 @@
 from discord.ext import commands
 import os
 import traceback
-import re
 
 # nDnダイスを呼び出す
 import nDnDICE
@@ -23,7 +22,7 @@ async def on_message(message):
     if message.author.bot:
         return
     # ダイスロール処理
-    if message.content == '\$\d{1,3}d\d{1,3}|\$\d{1,3}D\d{1,3}':
+    if judge_nDn(message.content):
         msg = message.content
         num, times, result, sum_dice = nDn(msg)
         if result is not None:
