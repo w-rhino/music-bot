@@ -11,8 +11,8 @@ import random
 import csv
 
 with open('./sw25_power.csv', newline='') as csvfile:
-read = csv.reader(csvfile)
-lst = [row for row in read]
+    read = csv.reader(csvfile)
+    lst = [row for row in read]
 
 
 # nDnダイスモジュール
@@ -78,11 +78,10 @@ async def ping(ctx):
 @bot.command()
 async def power(ctx, value):
     num, times, result, sum_dice = nDn('\$2D6')
-    v = value/5
+    v = int(value)/5
     pwr = lst[v][sum_dice]
-    if pwr == 127:
-        pwr = 'ファンブル！'
-    await ctx.send('出目：' + str(result) + '威力：'pwr)
+    if pwr == 127: pwr = 'ファンブル！'
+    await ctx.send('出目：' + str(result) + '威力：' + pwr)
     
 # メッセージ受信時に動作する処理
 @bot.event
