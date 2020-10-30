@@ -22,6 +22,9 @@ with open('./sw25_power.csv', newline='') as csvfile:
 pattern = '\d{1,3}d\d{1,3}|\d{1,3}D\d{1,3}'
 split_pattern = 'd|D'
 
+#威力表用正規表現
+pattern_power = '\d{1,3}'
+
 #入力した文字がnDnに合致するか
 def judge_nDn(src):
     repatter = re.compile(pattern)
@@ -71,6 +74,14 @@ def culcPower(value, sum_dice):
     if pwrInv == '127':
         pwrInv = 'ファンブル！'
     return pwr, pwrInv
+
+def judge_Power(src):
+    repatter = re.compile(pattern_power)
+    result = repatter.fullmatch(src)
+    if result is not None:
+        return True
+    return False
+    
     
 ####################
         
@@ -91,7 +102,10 @@ async def r(ctx, *args):
     if len(args) == 0:
         tmp = '2D6'
     else:
-        tmp = args[0]    
+        tmp = args[0]
+        if judge_nDn(args[0]) == False:
+            await ctx.send('引数が正しくありません。入力しなおして下さい。')
+            return            
     num, times, result, sum_dice = nDn(tmp)
     if result is not None:
             await ctx.send(ctx.author.name + 'さんのダイスロール\n' + num + '面ダイスを' + times + '回振ります。\n出目：' + str(result) + '\n合計：' + str(sum_dice)) 
@@ -102,13 +116,19 @@ async def roll(ctx, *args):
     if len(args) == 0:
         tmp = '2D6'
     else:
-        tmp = args[0]    
+        tmp = args[0] 
+        if judge_nDn(args[0]) == False:
+            await ctx.send('引数が正しくありません。入力しなおして下さい。') 
+            return
     num, times, result, sum_dice = nDn(tmp)
     if result is not None:
             await ctx.send(ctx.author.name + 'さんのダイスロール\n' + num + '面ダイスを' + times + '回振ります。\n出目：' + str(result) + '\n合計：' + str(sum_dice)) 
             
 @bot.command()
 async def p(ctx, value):
+    if judge_Power(value) == False:
+        await ctx.send('引数が正しくありません。入力しなおして下さい。') 
+        return
     num, times, result, sum_dice = nDn('2D6')
     pwr, pwrInv = culcPower(value, sum_dice)
     await ctx.send('出目：' + str(result) + '\n威力：' + pwr + '\n運命変転時威力：' + pwrInv)
