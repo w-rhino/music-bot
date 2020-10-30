@@ -60,7 +60,21 @@ def nDn(text):
     else:
         return 0,0,[],0
     
+    
+###威力表
+def culcPower(value, sum_dice):
+    v = int(int(value)/5)
+    pwr = str(lst[v][sum_dice - 1])
+    pwrInv = str(14 - int(lst[v][sum_dice - 1]))
+    if pwr == '127': 
+        pwr = 'ファンブル！'
+    if pwrInv == '127':
+        pwrInv = 'ファンブル！'
+    return pwr, pwrInv
+    
 ####################
+        
+
 
 bot = commands.Bot(command_prefix='$')
 token = os.environ['DISCORD_BOT_TOKEN']
@@ -96,19 +110,13 @@ async def roll(ctx, *args):
 @bot.command()
 async def p(ctx, value):
     num, times, result, sum_dice = nDn('2D6')
-    v = int(int(value)/5)
-    pwr = str(lst[v][sum_dice - 1])
-    if pwr == '127': 
-        pwr = 'ファンブル！'
-    await ctx.send('出目：' + str(result) + '\n威力：' + pwr)
+    pwr, pwrInv = culcPower(value, sum_dice)
+    await ctx.send('出目：' + str(result) + '\n威力：' + pwr + '\n運命変転時威力：' + pwrInv)
 
 @bot.command()
 async def power(ctx, value):
     num, times, result, sum_dice = nDn('2D6')
-    v = int(int(value)/5)
-    pwr = str(lst[v][sum_dice - 1])
-    if pwr == '127': 
-        pwr = 'ファンブル！'
-    await ctx.send('出目：' + str(result) + '\n威力：' + pwr)
+    pwr, pwrInv = culcPower(value, sum_dice)
+    await ctx.send('出目：' + str(result) + '\n威力：' + pwr + '\n運命変転時威力：' + pwrInv)
     
 bot.run(token)
