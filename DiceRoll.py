@@ -143,7 +143,7 @@ async def roll(ctx, *args):
             
 @bot.command()
 async def p(ctx, *value):
-    if value is None:
+    if len(value) == 0:
         await ctx.send('威力となる引数が必要です。')
         return
     if judge_Power(value[0]) == False:
@@ -155,7 +155,7 @@ async def p(ctx, *value):
 
 @bot.command()
 async def power(ctx, *value):
-    if value is None:
+    if len(value) == 0:
         await ctx.send('威力となる引数が必要です。')
         return
     if judge_Power(value[0]) == False:
@@ -176,7 +176,7 @@ async def sp(ctx, *args):
     if int(args[1]) > 12 or int(args[1]) < 2:
         await ctx.send('ダイスの合計値が不正です。２～１２の数字を入力してください。')
         return
-    pwr, pwrInv = culcPower(args[0], args[1])
+    pwr, pwrInv = culcPower(args[0], int(args[1]))
     await ctx.send('ダイス合計値：' + args[1] + '\n威力：' + pwr + '\n運命変転時威力：' + pwrInv)
     
 @bot.command()
@@ -190,7 +190,7 @@ async def searchpower(ctx, *args):
     if int(args[1]) > 12 or int(args[1]) < 2:
         await ctx.send('ダイスの合計値が不正です。２～１２の数字を入力してください。')
         return
-    pwr, pwrInv = culcPower(args[0], args[1])
+    pwr, pwrInv = culcPower(args[0], int(args[1]))
     await ctx.send('ダイス合計値：' + args[1] + '\n威力：' + pwr + '\n運命変転時威力：' + pwrInv)
     
 bot.run(token)
