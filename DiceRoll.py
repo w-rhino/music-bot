@@ -111,6 +111,9 @@ token = os.environ['DISCORD_BOT_TOKEN']
 async def on_command_error(ctx, error):
     orig_error = getattr(error, "original", error)
     error_msg = ''.join(traceback.TracebackException.from_exception(orig_error).format())
+    if 'discord.ext.commands.errors.CommandNotFound' in error_msg:
+        await ctx.send('存在しないコマンドだよ！$helpで使えるコマンドを確認してね')
+        return 
     await ctx.send(error_msg)
 
 @bot.command()
