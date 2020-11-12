@@ -228,6 +228,7 @@ async def leave(ctx):
 #再生
 @bot.command(aliases = ["再生","music"])
 async def play(ctx):
+    global music_path
     voice_client = ctx.message.guild.voice_client
 
     if not voice_client:
