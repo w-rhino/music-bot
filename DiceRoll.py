@@ -43,6 +43,11 @@ split_pattern = 'd|D'
 pattern_power = '\d{1,2}'
 pattern_poweradj = '\d{1}'
 
+#音楽用キュー
+music_path = ''
+queue = deque()
+voice_client = None
+
 #入力した文字がnDnに合致するか
 def judge_nDn(src):
     repatter = re.compile(pattern)
@@ -119,6 +124,7 @@ def judge_adjest(src):
 #キューの確認   
 def check_queue(e):
     global music_path
+    global voice_client
     os.remove(music_path)
     try:
         if not queue.empty():
@@ -141,10 +147,7 @@ token = os.environ['DISCORD_BOT_TOKEN']
 # if not discord.opus.is_loaded():
 #     discord.opus.load_opus("heroku-buildpack-libopus")
 
-#音楽用キュー
-music_path = ''
-queue = deque()
-voice_client = None
+
 
 @bot.event
 async def on_command_error(ctx, error):
@@ -229,6 +232,7 @@ async def leave(ctx):
 @bot.command(aliases = ["再生","music"])
 async def play(ctx):
     global music_path
+    global voice_client
     voice_client = ctx.message.guild.voice_client
 
     if not voice_client:
