@@ -116,7 +116,21 @@ def judge_adjest(src):
         return True
     return False
     
-    
+#キューの確認   
+def check_queue(e):
+    global music_path
+    os.remove(music_path)
+    try:
+        if not queue.empty():
+            current_id = queue.popleft()
+            f = drive.CreateFile({'id': current_id})
+            music_path = os.path.join('/tmp', f['title'])
+            f.GetContentFile(music_path)
+            ffmpeg_audio_source = discord.FFmpegPCMAudio(music_path)
+            voice_client.play(ffmpeg_audio_source, after = check_queue)
+    except:
+        print(e)    
+
 ####################
 ##async関数開始
 
@@ -236,20 +250,6 @@ async def play(ctx):
     voice_client.play(ffmpeg_audio_source, after = check_queue)
 
     await ctx.send("再生中…")
-    
-def check_queue(e):
-    global music_path
-    os.remove(music_path)
-    try:
-        if not queue.empty():
-            current_id = queue.popleft()
-            f = drive.CreateFile({'id': current_id})
-            music_path = os.path.join('/tmp', f['title'])
-            f.GetContentFile(music_path)
-            ffmpeg_audio_source = discord.FFmpegPCMAudio(music_path)
-            voice_client.play(ffmpeg_audio_source, after = check_queue)
-    except:
-        print(e)
 
 @bot.command()
 async def stop(ctx):
