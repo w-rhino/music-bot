@@ -203,27 +203,27 @@ async def leave(ctx):
     await ctx.send("ボイスチャンネルから切断しました。")
     
 #再生
-@bot.command(aliases = ["p","music"])
-async def play(ctx):
-    voice_client = ctx.message.guild.voice_client
+# @bot.command(aliases = ["p","music"])
+# async def play(ctx):
+#     voice_client = ctx.message.guild.voice_client
 
-    if not voice_client:
-        await ctx.send("Botはこのサーバーのボイスチャンネルに参加していません。")
-        return
+#     if not voice_client:
+#         await ctx.send("Botはこのサーバーのボイスチャンネルに参加していません。")
+#         return
 
-    # if not ctx.message.attachments:
-    #     await ctx.send("ファイルが添付されていません。")
-    #     return
-    queue = music_fulllist
-    for musicfile in queue:
-        file_id = musicfile['id']
-        f = drive.CreateFile({'id': file_id})
-        content = f.GetContentFile(os.path.join('tmp', f['title']))
-        ffmpeg_audio_source = discord.FFmpegPCMAudio(content)
-        voice_client.play(ffmpeg_audio_source)
-        os.remove(os.path.join('tmp', f['title']))
+#     # if not ctx.message.attachments:
+#     #     await ctx.send("ファイルが添付されていません。")
+#     #     return
+#     queue = music_fulllist
+#     for musicfile in queue:
+#         file_id = musicfile['id']
+#         f = drive.CreateFile({'id': file_id})
+#         content = f.GetContentFile(os.path.join('tmp', f['title']))
+#         ffmpeg_audio_source = discord.FFmpegPCMAudio(content)
+#         voice_client.play(ffmpeg_audio_source)
+#         os.remove(os.path.join('tmp', f['title']))
 
-        await ctx.send("再生しました。")
+#         await ctx.send("再生しました。")
         
         
 
