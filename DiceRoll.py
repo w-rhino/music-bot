@@ -23,8 +23,6 @@ drive = GoogleDrive(gauth)
 dir_id = drive.ListFile({'q': 'title = "music-bot"'}).GetList()[0]['id']
 music_fulllist = drive.ListFile({'q': '"{}" in parents'.format(dir_id)}).GetList()
 
-print(music_fulllist)
-
 #威力表読み込み
 with open('./sw25_power.csv', newline='') as csvfile:
     read = csv.reader(csvfile)
@@ -178,7 +176,7 @@ async def sp(ctx, *args):
 ################MusicBot
 
 #参加
-@bot.command(aliases = ["play", "summon"]) 
+@bot.command(aliases = ["connect", "summon"]) 
 async def join(ctx):
     voice_state = ctx.author.voice
 
@@ -205,7 +203,7 @@ async def leave(ctx):
     await ctx.send("ボイスチャンネルから切断しました。")
     
 #再生
-@bot.command(aliases = ["p","music"])
+@bot.command(aliases = ["再生","music"])
 async def play(ctx):
     voice_client = ctx.message.guild.voice_client
 
