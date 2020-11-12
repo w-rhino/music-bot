@@ -126,16 +126,13 @@ def check_queue(e):
     global music_path
     global voice_client
     os.remove(music_path)
-    try:
-        if not queue.empty():
-            current_id = queue.popleft()
-            f = drive.CreateFile({'id': current_id})
-            music_path = os.path.join('/tmp', f['title'])
-            f.GetContentFile(music_path)
-            ffmpeg_audio_source = discord.FFmpegPCMAudio(music_path)
-            voice_client.play(ffmpeg_audio_source, after = check_queue)
-    except:
-        print(e)    
+    if not queue.empty():
+        current_id = queue.popleft()
+        f = drive.CreateFile({'id': current_id})
+        music_path = os.path.join('/tmp', f['title'])
+        f.GetContentFile(music_path)
+        ffmpeg_audio_source = discord.FFmpegPCMAudio(music_path)
+        voice_client.play(ffmpeg_audio_source, after = check_queue)    
 
 ####################
 ##async関数開始
