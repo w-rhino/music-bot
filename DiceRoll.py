@@ -3,6 +3,8 @@ import discord
 from discord.ext import commands
 import os
 import traceback
+import asyncio
+from collections import deque
 
 #正規表現用ライブラリ
 import re
@@ -22,6 +24,8 @@ drive = GoogleDrive(gauth)
 
 dir_id = drive.ListFile({'q': 'title = "music-bot"'}).GetList()[0]['id']
 music_fulllist = drive.ListFile({'q': '"{}" in parents'.format(dir_id)}).GetList()
+
+#連続再生用の
 
 #威力表読み込み
 with open('./sw25_power.csv', newline='') as csvfile:
@@ -123,6 +127,11 @@ token = os.environ['DISCORD_BOT_TOKEN']
 # if not discord.opus.is_loaded():
 #     discord.opus.load_opus("heroku-buildpack-libopus")
 
+#音楽用キュー
+music_path = ''
+queue = deque()
+voice_client = None
+
 @bot.event
 async def on_command_error(ctx, error):
     orig_error = getattr(error, "original", error)
@@ -211,18 +220,64 @@ async def play(ctx):
         await ctx.send("Botはこのサーバーのボイスチャンネルに参加していません。")
         return
 
-    queue = music_fulllist
-    for musicfile in queue:
+    queue.clear()
+    
+    for musicfile in music_fulllist:
         file_id = musicfile['id']
-        f = drive.CreateFile({'id': file_id})
-        tmpfile = os.path.join('/tmp', f['title'])
-        f.GetContentFile(tmpfile)
-        ffmpeg_audio_source = discord.FFmpegPCMAudio(tmpfile)
-        voice_client.play(ffmpeg_audio_source)
-        os.remove(tmpfile)
+        queue.append(file_id)  
+        
+    
+    current_id = queue.popleft()
+    f = drive.CreateFile({'id': current_id})
+    music_path = os.path.join('/tmp', f['title'])
+  
+    f.GetContentFile(music_path)
+    ffmpeg_audio_source = discord.FFmpegPCMAudio(music_path)
+    voice_client.play(ffmpeg_audio_source, after = check_queue)
 
-        await ctx.send("再生しました。")
+    await ctx.send("再生中…")
+    
+def check_queue(e):
+    global music_path
+    os.remove(music_path)
+    try:
+        if not queue.empty():
+            current_id = queue.popleft()
+            f = drive.CreateFile({'id': current_id})
+            music_path = os.path.join('/tmp', f['title'])
+            f.GetContentFile(music_path)
+            ffmpeg_audio_source = discord.FFmpegPCMAudio(music_path)
+            voice_client.play(ffmpeg_audio_source, after = check_queue)
+    except:
+        print(e)
+
+@bot.comand()
+async def stop(ctx):
+    voice_client = ctx.message.guild.voice_client
+    if voice_client.is_playing():
+        voice_client.stop()
+        await ctx.send("曲を停止しました。")
+    else:
+        await ctx.send("停止する曲がないよ！")
         
+@bot.command()
+async def pause(ctx):
+    voice_client = ctx.message.guild.voice_client
+    if voice_client.is_paused():
+        await ctx.send("既に一時停止中です。再開はresumeです。")
+        return
+    else:
+        voice_client.pause()
+        await ctx.send("再生を一時停止しました。再開はresumeです。")
         
+@bot.command()
+async def resume(ctx):
+    voice_client = ctx.message.guild.voice_client
+    if voice_client.is_paused():
+        await ctx.send("再生を再開します。")
+        voice_client.resume()
+        return
+    else:
+        await ctx.send("再開するための曲がないよ！") 
 
 bot.run(token)
