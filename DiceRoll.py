@@ -215,10 +215,10 @@ async def play(ctx):
     for musicfile in queue:
         file_id = musicfile['id']
         f = drive.CreateFile({'id': file_id})
-        content = f.GetContentFile(os.path.join('tmp', f['title']))
+        content = f.GetContentFile(os.path.join('/tmp', f['title']))
         ffmpeg_audio_source = discord.FFmpegPCMAudio(content)
         voice_client.play(ffmpeg_audio_source)
-        os.remove(os.path.join('tmp', f['title']))
+        os.remove(os.path.join('/tmp', f['title']))
 
         await ctx.send("再生しました。")
         
