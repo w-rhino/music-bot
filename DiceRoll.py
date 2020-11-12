@@ -25,6 +25,8 @@ drive = GoogleDrive(gauth)
 dir_id = drive.ListFile({'q': 'title = "music-bot"'}).GetList()[0]['id']
 music_fulllist = drive.ListFile({'q': '"{}" in parents'.format(dir_id)}).GetList()
 
+print(music_fulllist)
+
 #連続再生用の
 
 #威力表読み込み
@@ -126,13 +128,15 @@ def check_queue(e):
     global music_path
     global voice_client
     os.remove(music_path)
-    if not queue.empty():
+    if len(queue) != 0 :
         current_id = queue.popleft()
         f = drive.CreateFile({'id': current_id})
         music_path = os.path.join('/tmp', f['title'])
         f.GetContentFile(music_path)
         ffmpeg_audio_source = discord.FFmpegPCMAudio(music_path)
-        voice_client.play(ffmpeg_audio_source, after = check_queue)    
+        voice_client.play(ffmpeg_audio_source, after = check_queue)
+    else:
+        print("再生終了！")
 
 ####################
 ##async関数開始
