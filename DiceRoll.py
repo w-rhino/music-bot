@@ -251,7 +251,7 @@ def check_queue(e):
     except:
         print(e)
 
-@bot.comand()
+@bot.command()
 async def stop(ctx):
     voice_client = ctx.message.guild.voice_client
     if voice_client.is_playing():
