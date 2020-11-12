@@ -120,8 +120,8 @@ bot = commands.Bot(command_prefix='$')
 token = os.environ['DISCORD_BOT_TOKEN']
 
 ##音声コーデック
-if not discord.opus.is_loaded():
-    discord.opus.load_opus("heroku-buildpack-libopus")
+# if not discord.opus.is_loaded():
+#     discord.opus.load_opus("heroku-buildpack-libopus")
 
 @bot.event
 async def on_command_error(ctx, error):
