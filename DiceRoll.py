@@ -1,4 +1,5 @@
 # インストールした discord.py を読み込む
+import discord
 from discord.ext import commands
 import os
 import traceback
@@ -9,6 +10,18 @@ import random
 
 #csv読み込みライブラリ
 import csv
+
+#Googleドライブ認証
+from pydrive.auth import GoogleAuth
+from pydrive.drive import GoogleDrive
+
+gauth = GoogleAuth()
+gauth.CommandLineAuth()
+#driveにアクセスすためのオブジェクト
+drive = GoogleDrive(gauth)
+
+dir_id = drive.ListFile({'q': 'title = "music-bot"'}).GetList()[0]['id']
+music_fulllist = drive.ListFile({'q': '"{}" in parents'.format(dir_id)}).GetList()
 
 #威力表読み込み
 with open('./sw25_power.csv', newline='') as csvfile:
@@ -101,11 +114,14 @@ def judge_adjest(src):
     
     
 ####################
-        
-
+##async関数開始
 
 bot = commands.Bot(command_prefix='$')
 token = os.environ['DISCORD_BOT_TOKEN']
+
+##音声コーデック
+if not discord.opus.is_loaded():
+    discord.opus.load_opus("heroku-buildpack-libopus")
 
 @bot.event
 async def on_command_error(ctx, error):
@@ -116,7 +132,7 @@ async def on_command_error(ctx, error):
         return 
     await ctx.send(error_msg)
 
-@bot.command()
+@bot.command(aliases = ["roll","dice"])
 async def r(ctx, *args):
     tmp = None
     if len(args) == 0:
@@ -129,22 +145,8 @@ async def r(ctx, *args):
     num, times, result, sum_dice = nDn(tmp)
     if result is not None:
             await ctx.send(ctx.author.name + 'さんのダイスロール\n' + num + '面ダイスを' + times + '回振ります。\n出目：' + str(result) + '\n合計：' + str(sum_dice)) 
-
-@bot.command()
-async def roll(ctx, *args):
-    tmp = None
-    if len(args) == 0:
-        tmp = '2D6'
-    else:
-        tmp = args[0] 
-        if judge_nDn(args[0]) == False:
-            await ctx.send('引数が正しくありません。入力しなおして下さい。') 
-            return
-    num, times, result, sum_dice = nDn(tmp)
-    if result is not None:
-            await ctx.send(ctx.author.name + 'さんのダイスロール\n' + num + '面ダイスを' + times + '回振ります。\n出目：' + str(result) + '\n合計：' + str(sum_dice)) 
             
-@bot.command()
+@bot.command(aliases=["power","po"])
 async def p(ctx, *value):
     if len(value) == 0:
         await ctx.send('威力となる引数が必要です。')
@@ -155,20 +157,8 @@ async def p(ctx, *value):
     num, times, result, sum_dice = nDn('2D6')
     pwr, pwrInv = culcPower(value[0], sum_dice)
     await ctx.send('出目：' + str(result) + '\n威力：' + pwr + '\n運命変転時威力：' + pwrInv)
-
-@bot.command()
-async def power(ctx, *value):
-    if len(value) == 0:
-        await ctx.send('威力となる引数が必要です。')
-        return
-    if judge_Power(value[0]) == False:
-        await ctx.send('威力となる引数が正しくありません。80以下の数字（５刻み）を入力してください。') 
-        return
-    num, times, result, sum_dice = nDn('2D6')
-    pwr, pwrInv = culcPower(value[0], sum_dice)
-    await ctx.send('出目：' + str(result) + '\n威力：' + pwr + '\n運命変転時威力：' + pwrInv)    
     
-@bot.command()
+@bot.command(aliases = ["searchpower", "search"])
 async def sp(ctx, *args):
     if len(args) < 2:
         await ctx.send('引数として威力、ダイスの合計値が必要です。')
@@ -182,18 +172,59 @@ async def sp(ctx, *args):
     pwr, pwrInv = culcPower(args[0], int(args[1]))
     await ctx.send('ダイス合計値：' + args[1] + '\n威力：' + pwr + '\n運命変転時威力：' + pwrInv)
     
-@bot.command()
-async def searchpower(ctx, *args):
-    if len(args) < 2:
-        await ctx.send('引数として威力、ダイスの合計値が必要です。')
-        return
-    if judge_Power(args[0]) == False:
-        await ctx.send('威力となる引数が正しくありません。80以下の数字（５刻み）を入力してください。') 
-        return
-    if int(args[1]) > 12 or int(args[1]) < 2:
-        await ctx.send('ダイスの合計値が不正です。２～１２の数字を入力してください。')
-        return
-    pwr, pwrInv = culcPower(args[0], int(args[1]))
-    await ctx.send('ダイス合計値：' + args[1] + '\n威力：' + pwr + '\n運命変転時威力：' + pwrInv)
     
+################MusicBot
+
+#参加
+@bot.command(aliases = ["play", "summon"]) 
+async def join(ctx):
+    voice_state = ctx.author.voice
+
+    if (not voice_state) or (not voice_state.channel):
+        #もし送信者がどこのチャンネルにも入っていないなら
+        await ctx.send("先にボイスチャンネルに入っている必要があります。")
+        return
+
+    channel = voice_state.channel #送信者のチャンネル
+
+    await channel.connect() #VoiceChannel.connect()を使用
+    await ctx.send(channel.name + "に参加したよ！")
+
+#退出   
+@bot.command(aliases=["disconnect","bye","dc"])
+async def leave(ctx):
+    voice_client = ctx.message.guild.voice_client
+
+    if not voice_client:
+        await ctx.send("Botはこのサーバーのボイスチャンネルに参加していません。")
+        return
+
+    await voice_client.disconnect()
+    await ctx.send("ボイスチャンネルから切断しました。")
+    
+#再生
+@bot.command(aliases = ["p","music"])
+async def play(ctx):
+    voice_client = ctx.message.guild.voice_client
+
+    if not voice_client:
+        await ctx.send("Botはこのサーバーのボイスチャンネルに参加していません。")
+        return
+
+    # if not ctx.message.attachments:
+    #     await ctx.send("ファイルが添付されていません。")
+    #     return
+    queue = music_fulllist
+    for musicfile in queue:
+        file_id = musicfile['id']
+        f = drive.CreateFile({'id': file_id})
+        content = f.GetContentFile(os.path.join('tmp', f['title']))
+        ffmpeg_audio_source = discord.FFmpegPCMAudio(content)
+        voice_client.play(ffmpeg_audio_source)
+        os.remove(os.path.join('tmp', f['title']))
+
+        await ctx.send("再生しました。")
+        
+        
+
 bot.run(token)
