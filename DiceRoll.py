@@ -277,7 +277,7 @@ async def shuffle(ctx):
     random.shuffle(music_queue)
     await ctx.send("再生リストをシャッフルしました。")
     
-@bot.command(aliases = ["q", "sequence"])
+@bot.command(aliases = ["q", "playlist"])
 async def queue(ctx):
     global music_queue
     
@@ -318,6 +318,8 @@ async def pause(ctx):
         
 @bot.command()
 async def resume(ctx):
+    
+
     voice_client = ctx.message.guild.voice_client
     if voice_client.is_paused():
         await ctx.send("再生を再開します。")
@@ -325,5 +327,30 @@ async def resume(ctx):
         return
     else:
         await ctx.send("再開するための曲がないよ！") 
+
+############
+#helpの調整
+############
+    
+bot.remove_command('help')
+
+@bot.command()
+async def help(ctx):
+    embed = discord.Embed(title="DiceRoll", description="ダイスロールと音楽再生機能を持ったBotです。コマンドは次の通りです。", color=0xeee657)
+
+    embed.add_field(name="$r|roll|dice [nDn]", value="サイコロを振ります。引数無しの場合は2D6を、引数(nDnの形で入力)ありの場合はそのダイスの形式で振ります。", inline=False)
+    embed.add_field(name="$p|po|power [value]", value="威力表に基づいたダメージを算出します。引数には80以下の数字(5刻み)を入力してください。", inline=False)
+    embed.add_field(name="$sp|search|searchpower [value] [sum_dice]", value="[sum_dice]の値が出た時、威力[value]のダメージを表示します。", inline=False)
+    embed.add_field(name="$join|connect|summon", value="ボイスチャンネルに参加します。", inline=False)
+    embed.add_field(name="$leave|disconnect|bye|dc", value="ボイスチャンネルから退出します。自動退出機能は無いため使い終わったらこのコマンドをお忘れなく。", inline=False)
+    embed.add_field(name="$play|再生|music", value="音楽を再生します。\n https://drive.google.com/drive/folders/1oJHlfO8BTlG4439vz-201k64esvoQhlW?usp=sharing \nここのフォルダにあるファイルを全て再生します。\n再生停止は$leaveで。")
+    embed.add_field(name="$nowplaying|nc|current", value="現在再生中のファイル名を表示します。", inline=False)
+    embed.add_field(name="$shuffle|sh|mix|random", value="再生リストをシャッフルします。", inline=False)
+    embed.add_field(name="$queue|q|playlist", value="プレイリストの先頭10件を表示します。", inline=False)
+    embed.add_field(name="$skip", value="現在再生中の曲を停止し、次の曲を再生します。", inline=False)
+    embed.add_field(name="$pause", value="再生を一時停止します。", inline=False)
+    embed.add_field(name="$resume", value="一時停止を解除します。", inline=False)
+
+    await ctx.send(embed=embed)
 
 bot.run(token)
