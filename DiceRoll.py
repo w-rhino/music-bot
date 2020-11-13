@@ -280,8 +280,9 @@ async def shuffle(ctx):
 async def queue(ctx):
     global music_queue
     
-    embed=discord.Embed(title= '現在の再生リスト',color=0xffa030)
-    for count, value in enumerate(music_queue, 1):
+    embed=discord.Embed(title= '現在の再生リスト(10曲分)',color=0xffa030)
+    embed.add_field(name = "", value = "Now：" + current_music[1])
+    for count, value in enumerate(music_queue[:10], 1):
         embed.add_field(name="", value= str(count) + '：' + value[1], inline=False)
     await ctx.send(embed=embed)
     
