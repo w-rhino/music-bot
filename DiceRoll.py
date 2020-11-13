@@ -4,6 +4,7 @@ from discord.ext import commands
 import os
 import traceback
 from collections import deque
+import itertools
 
 #正規表現用ライブラリ
 import re
@@ -281,7 +282,7 @@ async def queue(ctx):
     global music_queue
     
     if len(music_queue) > 10:
-        sublist = music_queue[0:10]
+        sublist = itertools.islice(music_queue, 0, 10) 
     elif len(music_queue) == 0:
         await ctx.send("キューに何も入ってないよ！")
         return
