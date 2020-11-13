@@ -225,13 +225,19 @@ async def leave(ctx):
         await ctx.send("Botはこのサーバーのボイスチャンネルに参加していません。")
         return
 
+    #曲の途中なら一時ファイル削除
+    if voice_client.is_playing():
+        await ctx.send("再生リストと一時ファイルを削除します。")
+        music_queue.clear()
+        voice_client.stop()
+        
     await voice_client.disconnect()
     await ctx.send("ボイスチャンネルから切断しました。")
     
 #再生
 @bot.command(aliases = ["再生","music"])
 async def play(ctx):
-    global music_path, voice_client
+    global music_path, voice_client, current_music
     voice_client = ctx.message.guild.voice_client
 
     if not voice_client:
@@ -246,7 +252,7 @@ async def play(ctx):
         file_name = musicfile['title']
         music_queue.append([file_id, file_name])  
         
-    
+    random.shuffle(music_queue)
     current_music = music_queue.popleft()
     f = drive.CreateFile({'id': current_music[0]})
     music_path = os.path.join('/tmp', f['title'])
@@ -276,18 +282,18 @@ async def queue(ctx):
     
     embed=discord.Embed(title= '現在の再生リスト',color=0xffa030)
     for count, value in enumerate(music_queue, 1):
-        embed.add_field(name="", value=count + '：' + value[1], inline=False)
+        embed.add_field(name="", value= str(count) + '：' + value[1], inline=False)
     await ctx.send(embed=embed)
     
 
 @bot.command()
-async def stop(ctx):
+async def skip(ctx):
     voice_client = ctx.message.guild.voice_client
     if voice_client.is_playing():
         voice_client.stop()
-        await ctx.send("曲を停止しました。")
+        await ctx.send("現在の曲を停止し、次の曲を再生します。")
     else:
-        await ctx.send("停止する曲がないよ！")
+        await ctx.send("現在再生している曲がないよ！")
         
 @bot.command()
 async def pause(ctx):
