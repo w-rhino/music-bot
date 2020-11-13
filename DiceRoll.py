@@ -293,7 +293,7 @@ async def queue(ctx):
     embed.add_field(name = "", value = "Now：" + current_music[1])
     for count, value in enumerate(sublist, 1):
         embed.add_field(name="", value= str(count) + '：' + value[1], inline=False)
-    embed.set_footer(text = "現在のキューは" + len(music_queue) + "件です。")
+    embed.set_footer(text = "現在のキューは" + str(len(music_queue)) + "件です。")
     await ctx.send(embed=embed)
     
 
