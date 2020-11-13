@@ -289,10 +289,10 @@ async def queue(ctx):
     else:
         sublist = music_queue
     
-    embed=discord.Embed(title= '現在の再生リスト(10曲分)',color=0xffa030)
-    embed.add_field(name = "", value = "Now：" + current_music[1])
+    embed=discord.Embed(title= '現在の再生リスト(先頭10曲分)',color=0xffa030)
+    embed.add_field(name ="Now playing", value = current_music[1])
     for count, value in enumerate(sublist, 1):
-        embed.add_field(name="", value= str(count) + '：' + value[1], inline=False)
+        embed.add_field(name= str(count) + ".", value=value[1], inline=False)
     embed.set_footer(text = "現在のキューは" + str(len(music_queue)) + "件です。")
     await ctx.send(embed=embed)
     
