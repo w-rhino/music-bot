@@ -3,7 +3,6 @@ import discord
 from discord.ext import commands
 import os
 import traceback
-import asyncio
 from collections import deque
 
 #正規表現用ライブラリ
@@ -19,13 +18,11 @@ from pydrive.drive import GoogleDrive
 
 gauth = GoogleAuth()
 gauth.CommandLineAuth()
-#driveにアクセスすためのオブジェクト
+#driveにアクセスするためのオブジェクト
 drive = GoogleDrive(gauth)
 
 dir_id = drive.ListFile({'q': 'title = "music-bot"'}).GetList()[0]['id']
 music_fulllist = drive.ListFile({'q': '"{}" in parents'.format(dir_id)}).GetList()
-
-print(music_fulllist)
 
 #連続再生用の
 
@@ -47,8 +44,12 @@ pattern_poweradj = '\d{1}'
 
 #音楽用キュー
 music_path = ''
-queue = deque()
+current_music = []
+music_queue = deque()
 voice_client = None
+
+bot = commands.Bot(command_prefix='$')
+token = os.environ['DISCORD_BOT_TOKEN']
 
 #入力した文字がnDnに合致するか
 def judge_nDn(src):
@@ -122,33 +123,31 @@ def judge_adjest(src):
     if result is not None:
         return True
     return False
-    
-#キューの確認   
+
+#キューの確認、再帰的に連続再生 
 def check_queue(e):
-    global music_path
-    global voice_client
+    global music_path, voice_client, current_music
     os.remove(music_path)
-    if len(queue) != 0 :
-        current_id = queue.popleft()
-        f = drive.CreateFile({'id': current_id})
+    if len(music_queue) != 0 :
+        current_music = music_queue.popleft()
+        f = drive.CreateFile({'id': current_music[0]})
         music_path = os.path.join('/tmp', f['title'])
         f.GetContentFile(music_path)
         ffmpeg_audio_source = discord.FFmpegPCMAudio(music_path)
         voice_client.play(ffmpeg_audio_source, after = check_queue)
     else:
         print("再生終了！")
+        
+#ドライブ情報のアップデート
+def update_drive():
+    global drive, dir_id, music_fulllist
+    drive = GoogleDrive(gauth)
+
+    dir_id = drive.ListFile({'q': 'title = "music-bot"'}).GetList()[0]['id']
+    music_fulllist = drive.ListFile({'q': '"{}" in parents'.format(dir_id)}).GetList()
 
 ####################
 ##async関数開始
-
-bot = commands.Bot(command_prefix='$')
-token = os.environ['DISCORD_BOT_TOKEN']
-
-##音声コーデック
-# if not discord.opus.is_loaded():
-#     discord.opus.load_opus("heroku-buildpack-libopus")
-
-
 
 @bot.event
 async def on_command_error(ctx, error):
@@ -232,23 +231,24 @@ async def leave(ctx):
 #再生
 @bot.command(aliases = ["再生","music"])
 async def play(ctx):
-    global music_path
-    global voice_client
+    global music_path, voice_client
     voice_client = ctx.message.guild.voice_client
 
     if not voice_client:
         await ctx.send("Botはこのサーバーのボイスチャンネルに参加していません。")
         return
 
-    queue.clear()
+    update_drive()
+    music_queue.clear()
     
     for musicfile in music_fulllist:
         file_id = musicfile['id']
-        queue.append(file_id)  
+        file_name = musicfile['title']
+        music_queue.append([file_id, file_name])  
         
     
-    current_id = queue.popleft()
-    f = drive.CreateFile({'id': current_id})
+    current_music = music_queue.popleft()
+    f = drive.CreateFile({'id': current_music[0]})
     music_path = os.path.join('/tmp', f['title'])
   
     f.GetContentFile(music_path)
@@ -256,6 +256,29 @@ async def play(ctx):
     voice_client.play(ffmpeg_audio_source, after = check_queue)
 
     await ctx.send("再生中…")
+    
+@bot.command(aliases = ["np", "current"])
+async def nowplaying(ctx):
+    global current_music
+    embed=discord.Embed(color=0x30ff30)
+    embed.add_field(name="nowplaying", value=current_music[1], inline=False)
+    await ctx.send(embed=embed)
+    
+@bot.command(aliases = ["sh", "mix", "random"])
+async def shuffle(ctx):
+    global music_queue
+    random.shuffle(music_queue)
+    await ctx.send("再生リストをシャッフルしました。")
+    
+@bot.command(aliases = ["q", "sequence"])
+async def queue(ctx):
+    global music_queue
+    
+    embed=discord.Embed(title= '現在の再生リスト',color=0xffa030)
+    for count, value in enumerate(music_queue, 1):
+        embed.add_field(name="", value=count + '：' + value[1], inline=False)
+    await ctx.send(embed=embed)
+    
 
 @bot.command()
 async def stop(ctx):
