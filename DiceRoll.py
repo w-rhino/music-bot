@@ -252,7 +252,9 @@ async def play(ctx):
     for musicfile in music_fulllist:
         file_id = musicfile['id']
         file_name = musicfile['title']
-        music_queue.append([file_id, file_name])  
+        music_queue.append([file_id, file_name])
+    
+    print(os.listdir('/tmp')) #tmp内のファイルをcheck
         
     random.shuffle(music_queue)
     current_music = music_queue.popleft()
