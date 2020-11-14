@@ -48,6 +48,7 @@ music_path = ''
 current_music = []
 music_queue = deque()
 voice_client = None
+loopflg = False
 
 bot = commands.Bot(command_prefix='$')
 token = os.environ['DISCORD_BOT_TOKEN']
@@ -128,9 +129,10 @@ def judge_adjest(src):
 #キューの確認、再帰的に連続再生 
 def check_queue(e):
     global music_path, voice_client, current_music
-    print(os.listdir('/tmp')) #tmp内のファイルをcheck
     os.remove(music_path)
     if len(music_queue) != 0 :
+        if loopflg:
+            music_queue.append(current_music)
         current_music = music_queue.popleft()
         f = drive.CreateFile({'id': current_music[0]})
         music_path = os.path.join('/tmp', f['title'])
@@ -253,8 +255,6 @@ async def play(ctx):
         file_id = musicfile['id']
         file_name = musicfile['title']
         music_queue.append([file_id, file_name])
-    
-    print(os.listdir('/tmp')) #tmp内のファイルをcheck
         
     random.shuffle(music_queue)
     current_music = music_queue.popleft()
@@ -273,6 +273,18 @@ async def nowplaying(ctx):
     embed=discord.Embed(color=0x30ff30)
     embed.add_field(name="nowplaying", value=current_music[1], inline=False)
     await ctx.send(embed=embed)
+    
+@bot.command(aliases = ["lq","loopqueue"])
+async def loop(ctx):
+    global loopflg
+    if not loopflg:
+        loopflg = True
+        await ctx.send("キューをループ状態にしました。解除はもう一度このコマンドを入力してください。")
+    else:
+        loopflg = False
+        await ctx.send("キューのループ状態を解除しました。")
+        
+        
     
 @bot.command(aliases = ["sh", "mix", "random"])
 async def shuffle(ctx):
