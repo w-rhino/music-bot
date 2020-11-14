@@ -126,16 +126,17 @@ def judge_adjest(src):
     return False
 
 #キューの確認、再帰的に連続再生 
-def check_queue(m_path):
-    global voice_client, current_music
-    os.remove(m_path)
+def check_queue(e):
+    global music_path, voice_client, current_music
+    print(os.listdir('/tmp')) #tmp内のファイルをcheck
+    os.remove(music_path)
     if len(music_queue) != 0 :
         current_music = music_queue.popleft()
         f = drive.CreateFile({'id': current_music[0]})
         music_path = os.path.join('/tmp', f['title'])
         f.GetContentFile(music_path)
         ffmpeg_audio_source = discord.FFmpegPCMAudio(music_path)
-        voice_client.play(ffmpeg_audio_source, after = check_queue(music_path))
+        voice_client.play(ffmpeg_audio_source, after = check_queue)
     else:
         print("再生終了！")
         
@@ -260,7 +261,7 @@ async def play(ctx):
   
     f.GetContentFile(music_path)
     ffmpeg_audio_source = discord.FFmpegPCMAudio(music_path)
-    voice_client.play(ffmpeg_audio_source, after = check_queue(music_path))
+    voice_client.play(ffmpeg_audio_source, after = check_queue)
 
     await ctx.send("再生中…")
     
