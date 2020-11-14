@@ -362,6 +362,7 @@ async def help(ctx):
     embed.add_field(name="$nowplaying|nc|current", value="現在再生中のファイル名を表示します。", inline=False)
     embed.add_field(name="$shuffle|sh|mix|random", value="再生リストをシャッフルします。", inline=False)
     embed.add_field(name="$queue|q|playlist", value="プレイリストの先頭10件を表示します。", inline=False)
+    embed.add_field(name="$loop|lq|loopqueue", value="再生リストをループ状態にします。解除はもう一度このコマンドを入力してください。", inline=False)
     embed.add_field(name="$skip", value="現在再生中の曲を停止し、次の曲を再生します。", inline=False)
     embed.add_field(name="$pause", value="再生を一時停止します。", inline=False)
     embed.add_field(name="$resume", value="一時停止を解除します。", inline=False)
