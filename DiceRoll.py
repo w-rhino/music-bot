@@ -260,22 +260,22 @@ async def status(ctx):
     
     embed = discord.Embed(title=data.get('character_name'), color=0xe657ee)
     
-    msg = "最大HP：" + data.get('HP') + "\n" + \
-        "最大MP：" + data.get('MP') + "\n" + \
-        "器用度：" + data.get('DEX') + "，ボーナス：" + data.get('DEX_bonus') + "\n" + \
-        "敏捷度：" + data.get('AGI') + "，ボーナス：" + data.get('AGI_bonus') + "\n" + \
-        "筋力：" + data.get('STR') + "，ボーナス：" + data.get('STR_bonus') + "\n" + \
-        "生命力：" + data.get('VIT') + "，ボーナス：" + data.get('VIT_bonus') + "\n" + \
-        "知力：" + data.get('INT') + "，ボーナス：" + data.get('INT_bonus') + "\n" + \
-        "精神力：" + data.get('MND') + "，ボーナス：" + data.get('MND_bonus') + "\n" + \
-        "生命抵抗力：" + data.get('RES_VITAL') + "\n" + \
-        "精神抵抗力：" + data.get('RES_MENTAL') + "\n" + \
-        "技巧判定：" + data.get('judge_tech') + "\n" + \
-        "運動判定：" + data.get('judge_physical') + "\n" + \
-        "観察判定："+ data.get('judge_obs') + "\n" + \
-        "(魔物)知識判定：" + data.get('judge_wisdom') + "\n" + \
-        "先制力：" + data.get('initiative') + "\n" + \
-        "移動力：" + data.get('moving')
+    msg = "最大HP：" + str(data.get('HP')) + "\n" + \
+        "最大MP：" + str(data.get('MP')) + "\n" + \
+        "器用度：" + str(data.get('DEX')) + "，ボーナス：" + str(data.get('DEX_bonus')) + "\n" + \
+        "敏捷度：" + str(data.get('AGI')) + "，ボーナス：" + str(data.get('AGI_bonus')) + "\n" + \
+        "筋力：" + str(data.get('STR')) + "，ボーナス：" + str(data.get('STR_bonus')) + "\n" + \
+        "生命力：" + str(data.get('VIT')) + "，ボーナス：" + str(data.get('VIT_bonus')) + "\n" + \
+        "知力：" + str(data.get('INT')) + "，ボーナス：" + str(data.get('INT_bonus')) + "\n" + \
+        "精神力：" + str(data.get('MND')) + "，ボーナス：" + str(data.get('MND_bonus')) + "\n" + \
+        "生命抵抗力：" + str(data.get('RES_VITAL')) + "\n" + \
+        "精神抵抗力：" + str(data.get('RES_MENTAL')) + "\n" + \
+        "技巧判定：" + str(data.get('judge_tech')) + "\n" + \
+        "運動判定：" + str(data.get('judge_physical')) + "\n" + \
+        "観察判定："+ str(data.get('judge_obs')) + "\n" + \
+        "(魔物)知識判定：" + str(data.get('judge_wisdom')) + "\n" + \
+        "先制力：" + str(data.get('initiative')) + "\n" + \
+        "移動力：" + str(data.get('moving'))
 
     embed.add_field(name="ステータス", value=msg, inline=False)
     
@@ -315,7 +315,7 @@ async def judge(ctx, *args):
         await ctx.send("引数が異なります。\n技巧判定：tec\n運動判定：phy\n観察判定：obs\n(魔物)知識判定：wis\n先制判定：ini")
         return
     
-    msg = msg + "を行います。\n判定合計値：" + str(total) + "目標値：" + args[1]
+    msg = msg + "を行います。\n判定合計値：" + str(total) + "，目標値：" + args[1]
     if total < goal:
         msg = msg + "\n判定失敗です…"
     else:
