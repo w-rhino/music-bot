@@ -258,26 +258,71 @@ async def load(ctx):
 async def status(ctx):
     data = chara_datalist.get(ctx.author.name)
     
-    embed = discord.Embed(title=data.get('character_name'), description="キャラのステータスは次の通りです。", color=0xe657ee)
+    embed = discord.Embed(title=data.get('character_name'), color=0xe657ee)
+    
+    msg = "最大HP：" + data.get('HP') + "\n" + \
+        "最大MP：" + data.get('MP') + "\n" + \
+        "器用度：" + data.get('DEX') + "，ボーナス：" + data.get('DEX_bonus') + "\n" + \
+        "敏捷度：" + data.get('AGI') + "，ボーナス：" + data.get('AGI_bonus') + "\n" + \
+        "筋力：" + data.get('STR') + "，ボーナス：" + data.get('STR_bonus') + "\n" + \
+        "生命力：" + data.get('VIT') + "，ボーナス：" + data.get('VIT_bonus') + "\n" + \
+        "知力：" + data.get('INT') + "，ボーナス：" + data.get('INT_bonus') + "\n" + \
+        "精神力：" + data.get('MND') + "，ボーナス：" + data.get('MND_bonus') + "\n" + \
+        "生命抵抗力：" + data.get('RES_VITAL') + "\n" + \
+        "精神抵抗力：" + data.get('RES_MENTAL') + "\n" + \
+        "技巧判定：" + data.get('judge_tech') + "\n" + \
+        "運動判定：" + data.get('judge_physical') + "\n" + \
+        "観察判定："+ data.get('judge_obs') + "\n" + \
+        "(魔物)知識判定：" + data.get('judge_wisdom') + "\n" + \
+        "先制力：" + data.get('initiative') + "\n" + \
+        "移動力：" + data.get('moving')
 
-    embed.add_field(name="最大HP：" + data.get('HP'), inline=False)
-    embed.add_field(name="最大MP：" + data.get('MP'), inline=False)
-    embed.add_field(name="器用度：" + data.get('DEX') + "，ボーナス：" + data.get('DEX_bonus'), inline=True)
-    embed.add_field(name="敏捷度：" + data.get('AGI') + "，ボーナス：" + data.get('AGI_bonus'), inline=True)
-    embed.add_field(name="筋力：" + data.get('STR') + "，ボーナス：" + data.get('STR_bonus'), inline=True)
-    embed.add_field(name="生命力：" + data.get('VIT') + "，ボーナス：" + data.get('VIT_bonus'), inline=True)
-    embed.add_field(name="知力：" + data.get('INT') + "，ボーナス：" + data.get('INT_bonus'), inline=True)
-    embed.add_field(name="精神力：" + data.get('MND') + "，ボーナス：" + data.get('MND_bonus'), inline=True)
-    embed.add_field(name="生命抵抗力：" + data.get('RES_VITAL'), inline=False)
-    embed.add_field(name="精神抵抗力：" + data.get('RES_MENTAL'), inline=False)
-    embed.add_field(name="技巧判定：" + data.get('judge_tech'), inline=False)
-    embed.add_field(name="運動判定：" + data.get('judge_physical'), inline=False)
-    embed.add_field(name="観察判定："+ data.get('judge_obs'), inline=False)
-    embed.add_field(name="(魔物)知識判定：" + data.get('judge_wisdom'), inline=False)
-    embed.add_field(name="先制力：" + data.get('priority'), inline=False)
-    embed.add_field(name="移動力：" + + data.get('moving'), inline=False)
+    embed.add_field(name="ステータス", value=msg, inline=False)
     
     await ctx.send(embed=embed)
+    
+@bot.command()
+async def judge(ctx, *args):
+    data = chara_datalist.get(ctx.author.name)
+    
+    if len(args) == 0:
+        await ctx.send("何の判定か、加えて目標値を入力してください。\n技巧判定：tec\n運動判定：phy\n観察判定：obs\n(魔物)知識判定：wis\n先制判定：ini")
+        return
+    if len(args) == 1:
+        await ctx.send("判定の目標値を入力してください。")
+        return
+    
+    goal = int(args[1])
+    num, times, result, sum_dice = nDn('2D6')
+    total = int(sum_dice)
+    msg = data.get("character_name") + "の"
+    if(args[0] == 'tec'):
+        msg = "技巧判定"
+        total = total + int(data.get("judge_tech"))
+    elif(args[0] == 'phy'):
+        msg = "運動判定"
+        total = total + int(data.get("judge_phy"))
+    elif(args[0] == 'obs'):
+        msg = "観察判定"
+        total = total + int(data.get("judge_obs"))
+    elif(args[0] == 'wis'):
+        msg = "(魔物)知識判定"
+        total = total + int(data.get("judge_wisdom"))
+    elif(args[0] == 'ini'):
+        msg = "先制判定"
+        total = total + int(data.get("initiative"))
+    else:
+        await ctx.send("引数が異なります。\n技巧判定：tec\n運動判定：phy\n観察判定：obs\n(魔物)知識判定：wis\n先制判定：ini")
+        return
+    
+    msg = msg + "を行います。\n判定合計値：" + str(total) + "目標値：" + args[1]
+    if total < goal:
+        msg = msg + "\n判定失敗です…"
+    else:
+        msg = msg + "\n判定成功です！"
+    
+    await ctx.send(msg)
+        
 
 @bot.command(aliases = ["atk", "combat"])    
 async def attack(ctx):
