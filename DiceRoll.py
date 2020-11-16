@@ -228,7 +228,8 @@ async def p(ctx, *value):
         await ctx.send('威力となる引数が正しくありません。80以下の数字を入力してください。') 
         return
     num, times, result, sum_dice = nDn('2D6')
-    pwr, pwrInv = culcPower(value[0], sum_dice)
+    pwr = culcPower(value[0], sum_dice)
+    pwrInv = culcPowerInv(value[0], sum_dice)
     await ctx.send('出目：' + str(result) + '\nダメージ：' + pwr + '\n運命変転時ダメージ：' + pwrInv)
     
 @bot.command(aliases = ["searchpower", "search"])
@@ -237,13 +238,14 @@ async def sp(ctx, *args):
         await ctx.send('引数として威力、ダイスの合計値が必要です。')
         return
     if judge_Power(args[0]) == False:
-        await ctx.send('威力となる引数が正しくありません。80以下の数字（５刻み）を入力してください。') 
+        await ctx.send('威力となる引数が正しくありません。80以下の数字を入力してください。') 
         return
     if int(args[1]) > 12 or int(args[1]) < 2:
         await ctx.send('ダイスの合計値が不正です。２～１２の数字を入力してください。')
         return
-    pwr, pwrInv = culcPower(args[0], int(args[1]))
-    await ctx.send('ダイス合計値：' + args[1] + '\n威力：' + pwr + '\n運命変転時威力：' + pwrInv)
+    pwr = culcPower(args[0], int(args[1]))
+    pwrInv = culcPowerInv(args[0], int(args[1]))
+    await ctx.send('ダイス合計値：' + args[1] + '\nダメージ：' + pwr + '\n運命変転時ダメージ：' + pwrInv)
  
 ###TRPG
     
@@ -490,6 +492,10 @@ async def help(ctx):
     embed.add_field(name="$r|roll|dice [nDn]", value="サイコロを振ります。引数無しの場合は2D6を、引数(nDnの形で入力)ありの場合はそのダイスの形式で振ります。", inline=False)
     embed.add_field(name="$p|po|power [value]", value="威力表に基づいたダメージを算出します。引数には80以下の数字(5刻み)を入力してください。", inline=False)
     embed.add_field(name="$sp|search|searchpower [value] [sum_dice]", value="[sum_dice]の値が出た時、威力[value]のダメージを表示します。", inline=False)
+    embed.add_field(name="$status|st|parameter", value = "現在のステータスを表示します。", inline = False)
+    embed.add_field(name="$attack|atk|combat", value = "手持ちの武器で攻撃したときのダメージを表示します。", inline = False)
+    embed.add_field(name="$judge [package] [goalvalue]", value = "判定の可否を表示します。第一引数にはtec,phy,obs,wis,iniが使用可能です。例；$judge tec 10", inline = False)
+    embed.add_field(name="$load", value = "キャラクターデータをロードします。", inline = False)
     embed.add_field(name="$join|connect|summon", value="ボイスチャンネルに参加します。", inline=False)
     embed.add_field(name="$leave|disconnect|bye|dc", value="ボイスチャンネルから退出します。自動退出機能は無いため使い終わったらこのコマンドをお忘れなく。", inline=False)
     embed.add_field(name="$play|再生|music", value="音楽を再生します。\n https://drive.google.com/drive/folders/1oJHlfO8BTlG4439vz-201k64esvoQhlW?usp=sharing \nここのフォルダにあるファイルを全て再生します。\n再生停止は$leaveで。")
