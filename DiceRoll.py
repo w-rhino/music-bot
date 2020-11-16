@@ -299,19 +299,19 @@ async def judge(ctx, *args):
     total = int(sum_dice)
     msg = data.get("character_name") + "の"
     if(args[0] == 'tec'):
-        msg = "技巧判定"
+        msg = msg + "技巧判定"
         total = total + int(data.get("judge_tech"))
     elif(args[0] == 'phy'):
-        msg = "運動判定"
+        msg = msg + "運動判定"
         total = total + int(data.get("judge_phy"))
     elif(args[0] == 'obs'):
-        msg = "観察判定"
+        msg = msg + "観察判定"
         total = total + int(data.get("judge_obs"))
     elif(args[0] == 'wis'):
-        msg = "(魔物)知識判定"
+        msg = msg + "(魔物)知識判定"
         total = total + int(data.get("judge_wisdom"))
     elif(args[0] == 'ini'):
-        msg = "先制判定"
+        msg = msg + "先制判定"
         total = total + int(data.get("initiative"))
     else:
         await ctx.send("引数が異なります。\n技巧判定：tec\n運動判定：phy\n観察判定：obs\n(魔物)知識判定：wis\n先制判定：ini")
