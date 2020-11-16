@@ -246,6 +246,13 @@ async def sp(ctx, *args):
     await ctx.send('ダイス合計値：' + args[1] + '\n威力：' + pwr + '\n運命変転時威力：' + pwrInv)
  
 ###TRPG
+    
+@bot.command()
+async def load(ctx):
+    await ctx.send("スプレッドシートのキャラデータをロード中です…")
+    load_charadata()
+    await ctx.send("ロードが完了しました。")
+    
 
 @bot.commnad(aliases = ["st","parameter"])
 async def status(ctx):
@@ -450,5 +457,8 @@ async def help(ctx):
     embed.add_field(name="$resume", value="一時停止を解除します。", inline=False)
 
     await ctx.send(embed=embed)
+
+#キャラデータロード
+load_charadata()
 
 bot.run(token)
