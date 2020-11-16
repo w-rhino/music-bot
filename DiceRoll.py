@@ -25,16 +25,6 @@ drive = GoogleDrive(gauth)
 dir_id = drive.ListFile({'q': 'title = "music-bot"'}).GetList()[0]['id']
 music_fulllist = drive.ListFile({'q': '"{}" in parents'.format(dir_id)}).GetList()
 
-#連続再生用の
-
-#威力表読み込み
-with open('./sw25_power.csv', newline='') as csvfile:
-    read = csv.reader(csvfile)
-    lst = [row for row in read]
-
-
-# nDnダイスモジュール
-
 #ダイス用正規表現
 pattern = '\d{1,3}d\d{1,3}|\d{1,3}D\d{1,3}'
 split_pattern = 'd|D'
@@ -50,8 +40,59 @@ music_queue = deque()
 voice_client = None
 loopflg = False
 
+#TRPG用データ
+powerlist = {}
+chara_datalist = {}
+
+#威力表読み込み
+with open('./sw25_power.csv', newline='', encoding='utf-8-sig') as csvfile:
+    read = csv.DictReader(csvfile)
+    for row in read:
+        tmp = {}
+        tmp = row
+        powerlist[row.get('power')] = tmp
+
+#bot用トークン
 bot = commands.Bot(command_prefix='$')
 token = os.environ['DISCORD_BOT_TOKEN']
+
+##########
+#TRPG関連
+##########
+
+def load_charadata():
+    drive = GoogleDrive(gauth)
+
+    dir_id = drive.ListFile({'q': 'title = "sword_world"'}).GetList()[0]['id']
+    chara_metadata = drive.ListFile({'q': '"{}" in parents and title = "charadata"'.format(dir_id)}).GetList()
+    data_id = chara_metadata[0]['id']
+    
+    f = drive.CreateFile({'id': data_id})
+    data_path = os.path.join('/tmp', 'chara.csv')
+    f.GetContentFile(data_path, mimetype='text/csv')
+    
+    with open(data_path, newline='', encoding='utf-8-sig') as csvfile:
+        readdata = csv.DictReader(csvfile)
+        for row in readdata:
+            tmp = {}
+            tmp = row
+            tmp['DEX_bonus'] = bonus(int(row.get('DEX')))
+            tmp['AGI_bonus'] = bonus(int(row.get('AGI')))
+            tmp['STR_bonus'] = bonus(int(row.get('STR')))
+            tmp['VIT_bonus'] = bonus(int(row.get('VIT')))
+            tmp['INT_bonus'] = bonus(int(row.get('INT')))
+            tmp['MND_bonus'] = bonus(int(row.get('MND')))
+            chara_datalist[row.get('discord_user_name')] = tmp
+            
+    os.remove(data_path)
+    
+    
+def bonus(parameter):
+    return int(parameter//6)
+
+#####
+#ダイスロール関連
+#####
 
 #入力した文字がnDnに合致するか
 def judge_nDn(src):
@@ -94,14 +135,16 @@ def nDn(text):
     
 ###威力表
 def culcPower(value, sum_dice):
-    v = int(int(value)/5)
-    pwr = str(lst[v][sum_dice - 1])
-    pwrInv = str(14 - int(lst[v][sum_dice - 1]))
-    if pwr == '127': 
-        pwr = 'ファンブル！'
-    if pwrInv == '127':
-        pwrInv = 'ファンブル！'
-    return pwr, pwrInv
+    pwr = powerlist.get(str(value))
+    damage = pwr.get(str(sum_dice))
+
+    return damage
+
+def culcPowerInv(value, sum_dice):
+    pwr = powerlist.get(str(value))
+    damageInv = pwr.get(str(14 - sum_dice))
+
+    return damageInv
 
 def adjestPower(value, sum_dice):
     if sum_dice != 2 and sum_dice != 12:
@@ -182,11 +225,11 @@ async def p(ctx, *value):
         await ctx.send('威力となる引数が必要です。')
         return
     if judge_Power(value[0]) == False:
-        await ctx.send('威力となる引数が正しくありません。80以下の数字（５刻み）を入力してください。') 
+        await ctx.send('威力となる引数が正しくありません。80以下の数字を入力してください。') 
         return
     num, times, result, sum_dice = nDn('2D6')
     pwr, pwrInv = culcPower(value[0], sum_dice)
-    await ctx.send('出目：' + str(result) + '\n威力：' + pwr + '\n運命変転時威力：' + pwrInv)
+    await ctx.send('出目：' + str(result) + '\nダメージ：' + pwr + '\n運命変転時ダメージ：' + pwrInv)
     
 @bot.command(aliases = ["searchpower", "search"])
 async def sp(ctx, *args):
@@ -201,7 +244,46 @@ async def sp(ctx, *args):
         return
     pwr, pwrInv = culcPower(args[0], int(args[1]))
     await ctx.send('ダイス合計値：' + args[1] + '\n威力：' + pwr + '\n運命変転時威力：' + pwrInv)
+ 
+###TRPG
+
+@bot.commnad(aliases = ["st","parameter"])
+async def status(ctx):
+    data = chara_datalist.get(ctx.author.name)
     
+    embed = discord.Embed(title=data.get('character_name'), description="キャラのステータスは次の通りです。", color=0xe657ee)
+
+    embed.add_field(name="最大HP：" + data.get('HP'), inline=False)
+    embed.add_field(name="最大MP：" + data.get('MP'), inline=False)
+    embed.add_field(name="器用度：" + data.get('DEX') + "，ボーナス：" + data.get('DEX_bonus'), inline=True)
+    embed.add_field(name="敏捷度：" + data.get('AGI') + "，ボーナス：" + data.get('AGI_bonus'), inline=True)
+    embed.add_field(name="筋力：" + data.get('STR') + "，ボーナス：" + data.get('STR_bonus'), inline=True)
+    embed.add_field(name="生命力：" + data.get('VIT') + "，ボーナス：" + data.get('VIT_bonus'), inline=True)
+    embed.add_field(name="知力：" + data.get('INT') + "，ボーナス：" + data.get('INT_bonus'), inline=True)
+    embed.add_field(name="精神力：" + data.get('MND') + "，ボーナス：" + data.get('MND_bonus'), inline=True)
+    embed.add_field(name="生命抵抗力：" + data.get('RES_VITAL'), inline=False)
+    embed.add_field(name="精神抵抗力：" + data.get('RES_MENTAL'), inline=False)
+    embed.add_field(name="技巧判定：" + data.get('judge_tech'), inline=False)
+    embed.add_field(name="運動判定：" + data.get('judge_physical'), inline=False)
+    embed.add_field(name="観察判定："+ data.get('judge_obs'), inline=False)
+    embed.add_field(name="(魔物)知識判定：" + data.get('judge_wisdom'), inline=False)
+    embed.add_field(name="先制力：" + data.get('priority'), inline=False)
+    embed.add_field(name="移動力：" + + data.get('moving'), inline=False)
+    
+    await ctx.send(embed=embed)
+
+@bot.command(aliases = ["atk", "combat"])    
+async def attack(ctx):
+    data = chara_datalist.get(ctx.author.name)
+    
+    num, times, result, sum_dice = nDn('2D6')
+    damage = int(data.get('total_damage')) + int(culcPower(data.get('weapon_power'), sum_dice))
+    #damageInv = int(data.get('total_damage')) + int(culcPowerInv(data.get('weapon_power'), sum_dice))
+    
+    damagemsg = data.get('character_name') + "の通常攻撃！\n" + "出目：" + str(result) + "\nダメージ：" + str(damage)
+    crimsg = "通常クリティカル値は" + data.get('weapon_critical') + "です。\nクリティカルの場合、$p " + data.get('weapon_power') + "を入力してそのダメージを加算してください。"
+    
+    await ctx.send(damagemsg + "\n" + crimsg)
     
 ################MusicBot
 
