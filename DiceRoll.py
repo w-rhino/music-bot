@@ -254,7 +254,7 @@ async def load(ctx):
     await ctx.send("ロードが完了しました。")
     
 
-@bot.commnad(aliases = ["st","parameter"])
+@bot.command(aliases = ["st","parameter"])
 async def status(ctx):
     data = chara_datalist.get(ctx.author.name)
     
