@@ -39,6 +39,7 @@ current_music = []
 music_queue = deque()
 voice_client = None
 loopflg = False
+repeatflg = False
 
 #TRPG用データ
 powerlist = {}
@@ -173,9 +174,12 @@ def judge_adjest(src):
 def check_queue(e):
     global music_path, voice_client, current_music
     os.remove(music_path)
+    if repeatflg:
+        music_queue.insert(0, current_music)
+    elif loopflg:
+        music_queue.append(current_music)
+    
     if len(music_queue) != 0 :
-        if loopflg:
-            music_queue.append(current_music)
         current_music = music_queue.popleft()
         f = drive.CreateFile({'id': current_music[0]})
         music_path = os.path.join('/tmp', f['title'])
@@ -420,7 +424,15 @@ async def loop(ctx):
         loopflg = False
         await ctx.send("キューのループ状態を解除しました。")
         
-        
+@bot.command()
+async def repeat(ctx):
+    global repeatflg
+    if not repeatflg:
+        repeatflg = True
+        await ctx.send("現在の曲をリピート再生します。解除はもう一度このコマンドを入力してください。")
+    else:
+        repeatflg = False
+        await ctx.send("リピート再生を中止しました。")        
     
 @bot.command(aliases = ["sh", "mix", "random"])
 async def shuffle(ctx):
@@ -502,6 +514,7 @@ async def help(ctx):
     embed.add_field(name="$nowplaying|nc|current", value="現在再生中のファイル名を表示します。", inline=False)
     embed.add_field(name="$shuffle|sh|mix|random", value="再生リストをシャッフルします。", inline=False)
     embed.add_field(name="$queue|q|playlist", value="プレイリストの先頭10件を表示します。", inline=False)
+    embed.add_field(name="$repeat", value="現在再生中の曲をリピート再生します。", inline=False)
     embed.add_field(name="$loop|lq|loopqueue", value="再生リストをループ状態にします。解除はもう一度このコマンドを入力してください。", inline=False)
     embed.add_field(name="$skip", value="現在再生中の曲を停止し、次の曲を再生します。", inline=False)
     embed.add_field(name="$pause", value="再生を一時停止します。", inline=False)
