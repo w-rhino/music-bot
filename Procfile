@@ -1,1 +1,1 @@
-DiceRoll: python __main__.py
+dice-roll: python __main__.py
