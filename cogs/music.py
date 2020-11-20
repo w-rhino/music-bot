@@ -162,9 +162,11 @@ class Music(commands.Cog):
             self.music_fulllist = self.drive.ListFile({'q': f'"{self.dir_id}" in parents and mimeType != "application/vnd.google-apps.folder"'}).GetList()
         else:
             folder_name = "playlist_" + args[0]
-            folder_id = self.drive.ListFile({'q': f'"{self.dir_id}" in parents and mimeType = "application/vnd.google-apps.folder" and title = "{folder_name}"'}).GetList()[0].get('id')
-            if folder_id == None:
+            folder_metalist = self.drive.ListFile({'q': f'"{self.dir_id}" in parents and mimeType = "application/vnd.google-apps.folder" and title = "{folder_name}"'}).GetList()
+            if folder_meta == []:
                 return await ctx.send("指定したフォルダはありません。「playlist_XX」のXXに当たる部分を引数として入力してください。")
+            folder_id = folder_meta[0].get('id')
+            
             self.music_fulllist.clear()
             self.music_fulllist = self.drive.ListFile({'q': f'"{folder_id}" in parents and mimeType != "application/vnd.google-apps.folder"'}).GetList()
             
