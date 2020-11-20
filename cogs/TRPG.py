@@ -129,7 +129,7 @@ class TRPG(commands.Cog):
             tmp = '2D6'
         else:
             tmp = args[0]
-        if self.judge_nDn(args[0]) == False:
+        if self.judge_nDn(tmp) == False:
             await ctx.send('引数が正しくありません。入力しなおして下さい。')
             return            
         num, times, result, sum_dice = self.nDn(tmp)
@@ -166,10 +166,14 @@ class TRPG(commands.Cog):
 
 
     @commands.command()
-    async def charaLoad(self, ctx):
+    async def swload(self, ctx):
+        await ctx.send("威力表をロード中です…")
+        self.load_powerlist()
+        await ctx.send("ロードが完了しました。")
         await ctx.send("スプレッドシートのキャラデータをロード中です…")
         self.load_charadata()
         await ctx.send("ロードが完了しました。")
+        
 
     @commands.command(aliases = ["st","parameter"])
     async def status(self, ctx):

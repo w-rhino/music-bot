@@ -198,7 +198,7 @@ class Music(commands.Cog):
         if status is None:
             return await ctx.send('Botはまだボイスチャンネルに参加していません')
         await ctx.send("次の曲を再生します。")
-        await status.stop()
+        status.stop()
 
     @commands.command()
     async def stop(self, ctx):
@@ -207,7 +207,7 @@ class Music(commands.Cog):
             return await ctx.send('Botはまだボイスチャンネルに参加していません')
         if not status.is_playing:
             return await ctx.send('既に停止しています')
-        await status.stop()
+        status.stop()
         await ctx.send('停止しました')
 
     @commands.command()
@@ -251,9 +251,9 @@ class Music(commands.Cog):
         embed.add_field(name ="Now playing", value = status.current_title, inline = False)
 
         msg = ""
-        for i, (file_id, file_title) in enumerate(queue):
-            msg = msg + str(i) + ". " + file_title + "\n"
-            if i > 10:
+        for i, (file_id, file_title) in enumerate(queue, 1):
+            msg = msg + str(i) + ".\t" + file_title + "\n"
+            if i > 9:
                 break
         embed.add_field(name = "次曲以降", value = msg, inline = False)
         embed.set_footer(text = "現在のキューは" + str(len(queue)) + "件です。")
