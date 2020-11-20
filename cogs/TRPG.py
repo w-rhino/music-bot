@@ -5,6 +5,7 @@ Created on Thu Nov 19 17:59:12 2020
 @author: sone daichi
 """
 import re
+import random
 import csv
 import os
 
@@ -14,14 +15,14 @@ from discord.ext import commands
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
 
-from cogs import diceroll
-
 class TRPG(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.powerlist = {}
         self.chara_datalist = {}
         self.pattern_power = '\d{1,2}'
+        self.pattern = '\d{1,3}d\d{1,3}|\d{1,3}D\d{1,3}'
+        self.split_pattern = 'd|D'
         self.gauth = GoogleAuth()
         self.gauth.CommandLineAuth()
         self.drive = GoogleDrive(self.gauth)
@@ -62,6 +63,44 @@ class TRPG(commands.Cog):
 
     def bonus(self, parameter):
         return int(parameter//6)
+    
+    #入力した文字がnDnに合致するか
+    def judge_nDn(self, src):
+        repatter = re.compile(self.pattern)
+        result = repatter.fullmatch(src)
+        if result is not None:
+            return True
+        return False
+
+    #nDnの数字を前半と後半に分ける
+    def split_nDn(self, src):
+        return re.split(self.split_pattern,src)
+
+    #ダイスロール
+    def roll_nDn(self, src):
+        result = []
+        sum_dice = 0
+        roll_index = self.split_nDn(src)
+        roll_count = int(roll_index[0])
+        nDice = int(roll_index[1])
+        
+        for i in range(roll_count):
+            tmp = random.randint(1,nDice)
+            result.append(tmp)
+            sum_dice = sum_dice + tmp
+        
+        is1dice = True if roll_count == 1 else False
+        
+        return result,sum_dice,is1dice
+
+    #入力と出力
+    def nDn(self, text):
+        if self.judge_nDn(text):
+            result,sum_dice,is1dice = self.roll_nDn(text)
+            spl = self.split_nDn(text)
+            return spl[1],spl[0],result,sum_dice
+        else:
+            return 0,0,[],0      
 
     def culcPower(self, value, sum_dice):
         pwr = self.powerlist.get(str(value))
@@ -82,6 +121,20 @@ class TRPG(commands.Cog):
             if int(result.group()) <= 80:
                 return True
         return False
+    
+    @commands.command(aliases = ["roll","dice"])
+    async def r(self, ctx, *args):
+        tmp = None
+        if len(args) == 0:
+            tmp = '2D6'
+        else:
+            tmp = args[0]
+        if self.judge_nDn(args[0]) == False:
+            await ctx.send('引数が正しくありません。入力しなおして下さい。')
+            return            
+        num, times, result, sum_dice = self.nDn(tmp)
+        if result is not None:
+            await ctx.send(ctx.author.name + 'さんのダイスロール\n' + num + '面ダイスを' + times + '回振ります。\n出目：' + str(result) + '\n合計：' + str(sum_dice)) 
 
     @commands.command(aliases = ["p","威力"])
     async def power(self, ctx, *args):
@@ -91,7 +144,7 @@ class TRPG(commands.Cog):
         if self.judge_Power(args[0]) == False:
             await ctx.send('威力となる引数が正しくありません。80以下の数字を入力してください。')
             return
-        num, times, result, sum_dice = diceroll.DiceRoll().nDn('2D6')
+        num, times, result, sum_dice = self.nDn('2D6')
         pwr = self.culcPower(args[0], sum_dice)
         pwrInv = self.culcPowerInv(args[0], sum_dice)
         await ctx.send('出目：' + str(result) + '\nダメージ：' + pwr + '\n運命変転時ダメージ：' + pwrInv)
@@ -157,7 +210,7 @@ class TRPG(commands.Cog):
             return
 
         goal = int(args[1])
-        num, times, result, sum_dice = diceroll.DiceRoll().nDn('2D6')
+        num, times, result, sum_dice = self.nDn('2D6')
         total = int(sum_dice)
         msg = data.get("character_name") + "の"
         if args[0] == 'tec':
@@ -191,7 +244,7 @@ class TRPG(commands.Cog):
     async def attack(self, ctx):
         data = self.chara_datalist.get(ctx.author.name)
 
-        num, times, result, sum_dice = diceroll.DiceRoll().nDn('2D6')
+        num, times, result, sum_dice = self.nDn('2D6')
         if sum_dice == 2:
             damage = str(self.culcPower(data.get('weapon_power'), sum_dice))
         else:
