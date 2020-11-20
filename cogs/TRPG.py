@@ -8,6 +8,7 @@ import re
 import random
 import csv
 import os
+import math
 
 import discord
 from discord.ext import commands
@@ -57,6 +58,8 @@ class TRPG(commands.Cog):
                 tmp['VIT_bonus'] = self.bonus(int(row.get('VIT')))
                 tmp['INT_bonus'] = self.bonus(int(row.get('INT')))
                 tmp['MND_bonus'] = self.bonus(int(row.get('MND')))
+                tmp['current_HP'] = int(row.get('HP'))
+                tmp['current_MP'] = int(row.get('MP'))
                 self.chara_datalist[row.get('discord_user_name')] = tmp
 
         os.remove(data_path)
@@ -182,7 +185,9 @@ class TRPG(commands.Cog):
         embed = discord.Embed(title=data.get('character_name'), color=0xe657ee)
 
         msg = "最大HP：" + str(data.get('HP')) + "\n" + \
+        "現在のHP：" + str(data.get('current_HP')) + "\n" + \
         "最大MP：" + str(data.get('MP')) + "\n" + \
+        "現在のMP：" + str(data.get('current_MP')) + "\n" + \
         "器用度：" + str(data.get('DEX')) + "，ボーナス：" + str(data.get('DEX_bonus')) + "\n" + \
         "敏捷度：" + str(data.get('AGI')) + "，ボーナス：" + str(data.get('AGI_bonus')) + "\n" + \
         "筋力：" + str(data.get('STR')) + "，ボーナス：" + str(data.get('STR_bonus')) + "\n" + \
@@ -259,7 +264,29 @@ class TRPG(commands.Cog):
         crimsg = "通常クリティカル値は" + data.get('weapon_critical') + "です。\nクリティカルの場合、$p " + data.get('weapon_power') + "を入力してそのダメージを加算してください。"
 
         await ctx.send(damagemsg + "\n" + crimsg)
-
+        
+    @commands.command(aliases = "dmg")
+    async def damage(self, ctx, value):
+        data = self.chara_datalist.get(ctx.author.name)
+        current_HP = int(data.get('current_HP'))
+        dmg = int(value) - int(data.get('total_protect'))
+        self.chara_datalist[ctx.author.name]['current_HP'] = str(current_HP - dmg)
+        
+        await ctx.send("相手の攻撃ダメージ：" + value + "\n実ダメージ：" + str(dmg) + "\n現在のHP：" + self.chara_datalist[ctx.author.name]['current_HP'])
+        if int(self.chara_datalist[ctx.author.name]['current_HP']) <= 0:
+            judge_doa = math.fabs(int(self.chara_datalist[ctx.author.name]['current_HP']))
+            await ctx.send("体力が0以下になり、気絶状態になりました。\n目標値：" + str(judge_doa) + "で生死判定を行ってください。\nボーナス値は" + str(int(data.get('level'))+int(data.get('VIT_bonus'))) + "です。")
+        
+    @commands.command()
+    async def heal(self, ctx, value):
+        data = self.chara_datalist.get(ctx.author.name)
+        current_HP = int(data.get('current_HP'))
+        after = current_HP + int(value)
+        if after > int(data.get('HP')):
+            after = int(data.get('HP'))
+        self.chara_datalist[ctx.author.name]['current_HP'] = str(after)
+        
+        await ctx.send(value + "点回復しました。現在のHPは" + str(after) + "です。")
 
 def setup(bot):
     return bot.add_cog(TRPG(bot))

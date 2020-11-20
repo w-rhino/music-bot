@@ -161,6 +161,8 @@ class Music(commands.Cog):
             file_id = musicfile['id']
             file_name = musicfile['title']
             await status.add_music(file_id, file_name)
+        
+        status.shuffle()
         await ctx.send("再生中…")
 
     @commands.command(aliases = ["np", "current"])
@@ -208,7 +210,7 @@ class Music(commands.Cog):
         if status is None:
             return await ctx.send('Botはまだボイスチャンネルに参加していません')
         if status.is_paused():
-            await ctx.send("既に一時停止中です。再開はresumeです。")
+            await ctx.send("既に一時停止中です。")
         else:
             status.pause()
             await ctx.send("再生を一時停止しました。再開はresumeです。")
