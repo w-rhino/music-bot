@@ -266,13 +266,22 @@ class TRPG(commands.Cog):
         await ctx.send(damagemsg + "\n" + crimsg)
         
     @commands.command(aliases = "dmg")
-    async def damage(self, ctx, value):
+    async def damage(self, ctx, *args):
         data = self.chara_datalist.get(ctx.author.name)
         current_HP = int(data.get('current_HP'))
-        dmg = int(value) - int(data.get('total_protect'))
+        if len(args) == 0:
+            return await ctx.send("引数に受けるダメージを入力してください。")
+        elif len(args) == 1:
+            cor = 0
+        else:
+            cor = args[1]
+            
+        dmg = int(args[0]) - int(data.get('total_protect')) - int(cor)
+        if dmg < 0:
+            dmg = 0
         self.chara_datalist[ctx.author.name]['current_HP'] = str(current_HP - dmg)
         
-        await ctx.send("相手の攻撃ダメージ：" + value + "\n実ダメージ：" + str(dmg) + "\n現在のHP：" + self.chara_datalist[ctx.author.name]['current_HP'])
+        await ctx.send("相手の攻撃ダメージ：" + args[0] + "\n実ダメージ：" + str(dmg) + "\n現在のHP：" + self.chara_datalist[ctx.author.name]['current_HP'])
         if int(self.chara_datalist[ctx.author.name]['current_HP']) <= 0:
             judge_doa = math.fabs(int(self.chara_datalist[ctx.author.name]['current_HP']))
             await ctx.send("体力が0以下になり、気絶状態になりました。\n目標値：" + str(judge_doa) + "で生死判定を行ってください。\nボーナス値は" + str(int(data.get('level'))+int(data.get('VIT_bonus'))) + "です。")
