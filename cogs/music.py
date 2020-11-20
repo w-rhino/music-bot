@@ -85,12 +85,12 @@ class MusicStatus:
             f.GetContentFile(self.music_path)
             src = discord.FFmpegPCMAudio(self.music_path)
             self.vc.play(src, after=self.play_next)
+            if self.loopf:
+                self.add_music(self.current_id, self.current_title)
             await self.playing.wait()
 
     def play_next(self, err=None):
         os.remove(self.music_path)
-        if self.loopf:
-            self.add_music(self.current_id, self.current_title)
         self.playing.set()
 
     async def leave(self):
@@ -199,16 +199,6 @@ class Music(commands.Cog):
             return await ctx.send('Botはまだボイスチャンネルに参加していません')
         await ctx.send("次の曲を再生します。")
         status.stop()
-
-    @commands.command()
-    async def stop(self, ctx):
-        status = self.music_statuses.get(ctx.guild.id)
-        if status is None:
-            return await ctx.send('Botはまだボイスチャンネルに参加していません')
-        if not status.is_playing:
-            return await ctx.send('既に停止しています')
-        status.stop()
-        await ctx.send('停止しました')
 
     @commands.command()
     async def pause(self, ctx):

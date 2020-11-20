@@ -166,9 +166,9 @@ class TRPG(commands.Cog):
 
 
     @commands.command()
-    async def swload(self, ctx):
+    async def loadsw(self, ctx):
         await ctx.send("威力表をロード中です…")
-        self.load_powerlist()
+        self.load_powerlist("./sw25_power.csv")
         await ctx.send("ロードが完了しました。")
         await ctx.send("スプレッドシートのキャラデータをロード中です…")
         self.load_charadata()

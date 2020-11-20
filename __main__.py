@@ -46,6 +46,7 @@ async def help(ctx):
     embed.add_field(name="$status|st|parameter", value = "現在のステータスを表示します。", inline = False)
     embed.add_field(name="$attack|atk|combat", value = "手持ちの武器で攻撃したときのダメージを表示します。", inline = False)
     embed.add_field(name="$judge [package] [goalvalue]", value = "判定の可否を表示します。第一引数にはtec,phy,obs,wis,iniが使用可能です。例；$judge tec 10", inline = False)
+    embed.add_field(name="$loadsw", value = "ソードワールド関連のファイルをダウンロードします。セッション前に一度走らせておきましょう。", inline = False)
     embed.add_field(name="$load　[cogfile]", value = "指定のCogファイルをロードします。", inline = False)
     embed.add_field(name="$unload　[cogfile]", value = "指定のCogファイルをアンロードします。", inline = False)
     embed.add_field(name="$join|connect|summon", value="ボイスチャンネルに参加します。", inline=False)
