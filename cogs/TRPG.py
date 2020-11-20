@@ -14,7 +14,7 @@ from discord.ext import commands
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
 
-from .diceroll import DiceRoll
+import diceroll
 
 class TRPG(commands.Cog):
     def __init__(self, bot):
@@ -91,7 +91,7 @@ class TRPG(commands.Cog):
         if self.judge_Power(args[0]) == False:
             await ctx.send('威力となる引数が正しくありません。80以下の数字を入力してください。')
             return
-        num, times, result, sum_dice = DiceRoll().nDn('2D6')
+        num, times, result, sum_dice = diceroll.DiceRoll().nDn('2D6')
         pwr = self.culcPower(args[0], sum_dice)
         pwrInv = self.culcPowerInv(args[0], sum_dice)
         await ctx.send('出目：' + str(result) + '\nダメージ：' + pwr + '\n運命変転時ダメージ：' + pwrInv)
@@ -157,7 +157,7 @@ class TRPG(commands.Cog):
             return
 
         goal = int(args[1])
-        num, times, result, sum_dice = DiceRoll().nDn('2D6')
+        num, times, result, sum_dice = diceroll.DiceRoll().nDn('2D6')
         total = int(sum_dice)
         msg = data.get("character_name") + "の"
         if args[0] == 'tec':
@@ -191,7 +191,7 @@ class TRPG(commands.Cog):
     async def attack(self, ctx):
         data = self.chara_datalist.get(ctx.author.name)
 
-        num, times, result, sum_dice = DiceRoll().nDn('2D6')
+        num, times, result, sum_dice = diceroll.DiceRoll().nDn('2D6')
         if sum_dice == 2:
             damage = str(self.culcPower(data.get('weapon_power'), sum_dice))
         else:
