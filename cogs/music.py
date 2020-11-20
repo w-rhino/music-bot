@@ -127,8 +127,8 @@ class Music(commands.Cog):
         self.gauth.CommandLineAuth()
         self.drive = GoogleDrive(self.gauth)
         self.dir_id = self.drive.ListFile({'q': 'title = "music-bot"'}).GetList()[0]['id']
-        self.music_fulllist = self.drive.ListFile({'q': '"{}" in parents and mimeType != "application/vnd.google-apps.folder"'.format(self.dir_id)}).GetList()
-
+        self.music_fulllist = []
+        
     @commands.command(aliases = ["connect","summon"])
     async def join(self, ctx):
         # VoiceChannel未参加
@@ -148,7 +148,8 @@ class Music(commands.Cog):
         del self.music_statuses[ctx.guild.id]
 
     @commands.command(aliases = ["music","再生"])
-    async def play(self, ctx):
+    async def play(self, ctx, *args):
+        self.drive = GoogleDrive(self.gauth)
         status = self.music_statuses.get(ctx.guild.id)
         #joinしていない場合joinする
         if status is None:
@@ -156,6 +157,17 @@ class Music(commands.Cog):
             await ctx.send("ボイスチャンネルに参加します。")
             status = self.music_statuses.get(ctx.guild.id)
 
+        if len(args) == 0:
+            self.music_fulllist.clear()
+            self.music_fulllist = self.drive.ListFile({'q': f'"{self.dir_id}" in parents and mimeType != "application/vnd.google-apps.folder"'}).GetList()
+        else:
+            folder_name = "playlist_" + args[0]
+            folder_id = self.drive.ListFile({'q': f'"{self.dir_id}" in parents and mimeType = "application/vnd.google-apps.folder" and title = "{folder_name}"'}).GetList()[0].get('id')
+            if folder_id == None:
+                return await ctx.send("指定したフォルダはありません。「playlist_XX」のXXに当たる部分を引数として入力してください。")
+            self.music_fulllist.clear()
+            self.music_fulllist = self.drive.ListFile({'q': f'"{folder_id}" in parents and mimeType != "application/vnd.google-apps.folder"'}).GetList()
+            
         await ctx.send("再生リストを構築中です…")
         for musicfile in self.music_fulllist:
             file_id = musicfile['id']
