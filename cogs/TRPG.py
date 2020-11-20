@@ -283,13 +283,15 @@ class TRPG(commands.Cog):
         
         await ctx.send("相手の攻撃ダメージ：" + args[0] + "\n実ダメージ：" + str(dmg) + "\n現在のHP：" + self.chara_datalist[ctx.author.name]['current_HP'])
         if int(self.chara_datalist[ctx.author.name]['current_HP']) <= 0:
-            judge_doa = math.fabs(int(self.chara_datalist[ctx.author.name]['current_HP']))
+            judge_doa = int(math.fabs(int(self.chara_datalist[ctx.author.name]['current_HP'])))
             await ctx.send("体力が0以下になり、気絶状態になりました。\n目標値：" + str(judge_doa) + "で生死判定を行ってください。\nボーナス値は" + str(int(data.get('level'))+int(data.get('VIT_bonus'))) + "です。")
         
     @commands.command()
     async def heal(self, ctx, value):
         data = self.chara_datalist.get(ctx.author.name)
         current_HP = int(data.get('current_HP'))
+        if current_HP <= 0:
+            return await ctx.send("気絶状態です。回復できません。")
         after = current_HP + int(value)
         if after > int(data.get('HP')):
             after = int(data.get('HP'))
