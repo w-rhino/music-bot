@@ -335,7 +335,10 @@ async def attack(ctx):
     data = chara_datalist.get(ctx.author.name)
     
     num, times, result, sum_dice = nDn('2D6')
-    damage = int(data.get('total_damage')) + int(culcPower(data.get('weapon_power'), sum_dice))
+    if sum_dice == 2:
+        damage = str(culcPower(data.get('weapon_power'), sum_dice))
+    else:
+        damage = int(data.get('total_damage')) + int(culcPower(data.get('weapon_power'), sum_dice))
     #damageInv = int(data.get('total_damage')) + int(culcPowerInv(data.get('weapon_power'), sum_dice))
     
     damagemsg = data.get('character_name') + "の通常攻撃！\n" + "出目：" + str(result) + "\nダメージ：" + str(damage)
@@ -481,8 +484,6 @@ async def pause(ctx):
         
 @bot.command()
 async def resume(ctx):
-    
-
     voice_client = ctx.message.guild.voice_client
     if voice_client.is_paused():
         await ctx.send("再生を再開します。")
@@ -524,5 +525,6 @@ async def help(ctx):
 
 #キャラデータロード
 load_charadata()
+
 
 bot.run(token)

@@ -1,1 +1,1 @@
-DiceRoll: python DiceRoll.py
+DiceRoll: python __main__.py
