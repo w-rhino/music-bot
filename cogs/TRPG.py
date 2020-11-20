@@ -14,7 +14,7 @@ from discord.ext import commands
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
 
-import diceroll
+from cogs import diceroll
 
 class TRPG(commands.Cog):
     def __init__(self, bot):
