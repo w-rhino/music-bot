@@ -90,6 +90,7 @@ class MusicStatus:
             await self.playing.wait()
 
     def play_next(self, err=None):
+        print(os.listdir("/tmp"))
         os.remove(self.music_path)
         self.playing.set()
 
