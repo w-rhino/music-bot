@@ -77,7 +77,7 @@ class MusicStatus:
             self.playing.clear()
             if not self.repeatf:
                 try:
-                    self.current_id, self.current_title = await asyncio.wait_for(self.queue.get(), timeout = 240)
+                    self.current_id, self.current_title = await asyncio.wait_for(self.queue.get(), timeout = 180)
                 except asyncio.TimeoutError:
                     asyncio.create_task(self.leave())
             f = self.drive.CreateFile({'id': self.current_id})
@@ -90,8 +90,9 @@ class MusicStatus:
             await self.playing.wait()
 
     def play_next(self, err=None):
-        print(os.listdir("/tmp"))
-        os.remove(self.music_path)
+        #print(os.listdir("/tmp"))
+        if os.path.exists(self.music_path):
+            os.remove(self.music_path)
         self.playing.set()
 
     async def leave(self):
