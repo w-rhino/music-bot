@@ -298,6 +298,16 @@ class TRPG(commands.Cog):
         self.chara_datalist[ctx.author.name]['current_HP'] = str(after)
         
         await ctx.send(value + "点回復しました。現在のHPは" + str(after) + "です。")
+        
+    @commands.command()
+    async def awaken(self, ctx):
+        data = self.chara_datalist.get(ctx.author.name)
+        if int(data.get('current_HP')) > 0:
+            return await ctx.send("あなたは気絶状態ではありません。")
+        else:
+            self.chara_datalist[ctx.author.name]['current_HP'] = "1"
+            await ctx.send("気絶状態から復帰しました。")
+        
 
 def setup(bot):
     return bot.add_cog(TRPG(bot))
