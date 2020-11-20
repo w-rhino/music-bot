@@ -265,7 +265,7 @@ class TRPG(commands.Cog):
 
         await ctx.send(damagemsg + "\n" + crimsg)
         
-    @commands.command(aliases = "dmg")
+    @commands.command(aliases = ["dmg", "被弾"])
     async def damage(self, ctx, *args):
         data = self.chara_datalist.get(ctx.author.name)
         current_HP = int(data.get('current_HP'))
