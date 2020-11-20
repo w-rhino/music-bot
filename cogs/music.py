@@ -86,7 +86,7 @@ class MusicStatus:
             src = discord.FFmpegPCMAudio(self.music_path)
             self.vc.play(src, after=self.play_next)
             if self.loopf:
-                self.add_music(self.current_id, self.current_title)
+                await self.add_music(self.current_id, self.current_title)
             await self.playing.wait()
 
     def play_next(self, err=None):
