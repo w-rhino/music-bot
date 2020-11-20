@@ -85,7 +85,7 @@ class MusicStatus:
             f.GetContentFile(self.music_path)
             src = discord.FFmpegPCMAudio(self.music_path)
             self.vc.play(src, after=self.play_next)
-            await self.ctx.playing.wait()
+            await self.playing.wait()
 
     def play_next(self, err=None):
         os.remove(self.music_path)
