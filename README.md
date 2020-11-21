@@ -86,11 +86,11 @@ Googleドライブ内の「music-bot」フォルダの中にある「playlist_ho
 $join|summon|connect  
 ボイスチャンネルに参加します。  
   
-$leave|bye|disconnect|dc
+$leave|bye|disconnect|dc  
 ボイスチャンネルから退出します。  
   
 $play \[playlistname\]  
-音楽を再生します。フォルダ内全曲シャッフル再生になります。
+音楽を再生します。フォルダ内全曲シャッフル再生になります。  
   
 $skip  
 次の曲を再生します。  
