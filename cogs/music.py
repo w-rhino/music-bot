@@ -7,7 +7,7 @@ Created on Thu Nov 19 21:32:13 2020
 
 @author: sone daichi
 """
-	
+
 import asyncio
 import os
 from random import shuffle
@@ -16,6 +16,7 @@ import discord
 from discord.ext import commands
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
+
 
 class MusicQueue(asyncio.Queue):
     def __init__(self):
@@ -32,6 +33,7 @@ class MusicQueue(asyncio.Queue):
 
     def reset(self):
         self._queue.clear()
+
 
 class MusicStatus:
     def __init__(self, ctx, vc):
@@ -57,14 +59,14 @@ class MusicStatus:
 
     def shuffle(self):
         self.queue.shuffle()
-        
+
     def loop(self):
         if self.loopf:
             self.loopf = False
         else:
             self.loopf = True
             self.repeatf = False
-            
+
     def repeat(self):
         if self.repeatf:
             self.repeatf = False
@@ -77,11 +79,11 @@ class MusicStatus:
             self.playing.clear()
             if not self.repeatf:
                 try:
-                    self.current_id, self.current_title = await asyncio.wait_for(self.queue.get(), timeout = 180)
+                    self.current_id, self.current_title = await asyncio.wait_for(self.queue.get(), timeout=180)
                 except asyncio.TimeoutError:
                     asyncio.create_task(self.leave())
             f = self.drive.CreateFile({'id': self.current_id})
-            self.music_path = os.path.join('/tmp',f['title'])
+            self.music_path = os.path.join('/tmp', f['title'])
             f.GetContentFile(self.music_path)
             src = discord.FFmpegPCMAudio(self.music_path)
             self.vc.play(src, after=self.play_next)
@@ -90,7 +92,6 @@ class MusicStatus:
             await self.playing.wait()
 
     def play_next(self, err=None):
-        #print(os.listdir("/tmp"))
         if os.path.exists(self.music_path):
             os.remove(self.music_path)
         self.playing.set()
@@ -119,6 +120,7 @@ class MusicStatus:
     def resume(self):
         self.vc.resume()
 
+
 class Music(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -128,8 +130,8 @@ class Music(commands.Cog):
         self.drive = GoogleDrive(self.gauth)
         self.dir_id = self.drive.ListFile({'q': 'title = "music-bot"'}).GetList()[0]['id']
         self.music_fulllist = []
-        
-    @commands.command(aliases = ["connect","summon"])
+
+    @commands.command(aliases=["connect", "summon"])
     async def join(self, ctx):
         # VoiceChannel未参加
         if not ctx.author.voice or not ctx.author.voice.channel:
@@ -138,7 +140,7 @@ class Music(commands.Cog):
         await ctx.send(ctx.author.voice.channel.name + "に参加したよ！")
         self.music_statuses[ctx.guild.id] = MusicStatus(ctx, vc)
 
-    @commands.command(aliases = ["dc","disconnect","bye"])
+    @commands.command(aliases=["dc", "disconnect", "bye"])
     async def leave(self, ctx):
         status = self.music_statuses.get(ctx.guild.id)
         if status is None:
@@ -147,11 +149,11 @@ class Music(commands.Cog):
         await ctx.send("ボイスチャンネルから切断しました。")
         del self.music_statuses[ctx.guild.id]
 
-    @commands.command(aliases = ["music","再生"])
+    @commands.command(aliases=["music", "再生"])
     async def play(self, ctx, *args):
         self.drive = GoogleDrive(self.gauth)
         status = self.music_statuses.get(ctx.guild.id)
-        #joinしていない場合joinする
+
         if status is None:
             await ctx.invoke(self.join)
             await ctx.send("ボイスチャンネルに参加します。")
@@ -166,30 +168,30 @@ class Music(commands.Cog):
             if folder_metalist == []:
                 return await ctx.send("指定したフォルダはありません。「playlist_XX」のXXに当たる部分を引数として入力してください。")
             folder_id = folder_metalist[0].get('id')
-            
+
             self.music_fulllist.clear()
             self.music_fulllist = self.drive.ListFile({'q': f'"{folder_id}" in parents and mimeType != "application/vnd.google-apps.folder"'}).GetList()
-            
+
         status.queue.reset()
         await ctx.send("再生リストを構築中です…")
         for musicfile in self.music_fulllist:
             file_id = musicfile['id']
             file_name = musicfile['title']
             await status.add_music(file_id, file_name)
-        
+
         status.shuffle()
         await ctx.send("再生中…")
 
-    @commands.command(aliases = ["np", "current"])
+    @commands.command(aliases=["np", "current"])
     async def nowplaying(self, ctx):
         status = self.music_statuses.get(ctx.guild.id)
         if status is None:
             return await ctx.send('Botはまだボイスチャンネルに参加していません')
-        embed=discord.Embed(color=0x30ff30)
+        embed = discord.Embed(color=0x30ff30)
         embed.add_field(name="nowplaying", value=status.current_title, inline=False)
         await ctx.send(embed=embed)
-        
-    @commands.command(aliases = ["lq","loopqueue"])
+
+    @commands.command(aliases=["lq", "loopqueue"])
     async def loop(self, ctx):
         status = self.music_statuses.get(ctx.guild.id)
         if status is None:
@@ -199,7 +201,7 @@ class Music(commands.Cog):
             await ctx.send("キューをループ状態にしました。解除はこのコマンドをもう一度入力してください。")
         else:
             await ctx.send("キューのループ状態を解除しました。")
-            
+
     @commands.command()
     async def repeat(self, ctx):
         status = self.music_statuses.get(ctx.guild.id)
@@ -209,7 +211,7 @@ class Music(commands.Cog):
         if status.repeatf:
             await ctx.send("一曲リピートの状態にしました。解除はこのコマンドをもう一度入力してください。")
         else:
-            await ctx.send("リピート状態を解除しました。")   
+            await ctx.send("リピート状態を解除しました。")
 
     @commands.command()
     async def skip(self, ctx):
@@ -241,7 +243,7 @@ class Music(commands.Cog):
         else:
             await ctx.send("再生するための曲がありません。")
 
-    @commands.command(aliases = ["sh","mix","random"])
+    @commands.command(aliases=["sh", "mix", "random"])
     async def shuffle(self, ctx):
         status = self.music_statuses.get(ctx.guild.id)
         if status is None:
@@ -249,23 +251,22 @@ class Music(commands.Cog):
         status.shuffle()
         await ctx.send("再生リストをシャッフルしました。")
 
-
-    @commands.command(aliases = ["q","playlist"])
+    @commands.command(aliases=["q", "playlist"])
     async def queue(self, ctx):
         status = self.music_statuses.get(ctx.guild.id)
         if status is None:
             return await ctx.send('先にボイスチャンネルに参加してください')
         queue = status.get_list()
-        embed=discord.Embed(title= '現在の再生リスト(先頭10曲分)',color=0xffa030)
-        embed.add_field(name ="Now playing", value = status.current_title, inline = False)
+        embed = discord.Embed(title='現在の再生リスト(先頭10曲分)', color=0xffa030)
+        embed.add_field(name="Now playing", value=status.current_title, inline=False)
 
         msg = ""
         for i, (file_id, file_title) in enumerate(queue, 1):
             msg = msg + str(i) + ".\t" + file_title + "\n"
             if i > 9:
                 break
-        embed.add_field(name = "次曲以降", value = msg, inline = False)
-        embed.set_footer(text = "現在のキューは" + str(len(queue)) + "件です。")
+        embed.add_field(name="次曲以降", value=msg, inline=False)
+        embed.set_footer(text="現在のキューは" + str(len(queue)) + "件です。")
         await ctx.send(embed=embed)
 
 

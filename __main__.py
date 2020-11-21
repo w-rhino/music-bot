@@ -13,6 +13,7 @@ from discord.ext import commands
 bot = commands.Bot(command_prefix='$')
 token = os.environ['DISCORD_BOT_TOKEN']
 
+
 @bot.event
 async def on_command_error(ctx, error):
     orig_error = getattr(error, "original", error)
@@ -22,26 +23,29 @@ async def on_command_error(ctx, error):
         return
     await ctx.send(error_msg)
 
+
 @bot.command()
 async def load(ctx, extension):
     bot.load_extension(f'cogs.{extension}')
+
 
 @bot.command()
 async def unload(ctx, extension):
     bot.unload_extension(f'cogs.{extension}')
 
 ############
-#helpの調整
+# helpの調整
 ############
 
 bot.remove_command('help')
+
 
 @bot.command()
 async def help(ctx):
     embed = discord.Embed(title="music-bot", description="音楽再生機能を持ったBotです。コマンドは次の通りです。", color=0xeee657)
 
-    embed.add_field(name="$load　[cogfile]", value = "指定のCogファイルをロードします。", inline = False)
-    embed.add_field(name="$unload　[cogfile]", value = "指定のCogファイルをアンロードします。", inline = False)
+    embed.add_field(name="$load　[cogfile]", value="指定のCogファイルをロードします。", inline=False)
+    embed.add_field(name="$unload　[cogfile]", value="指定のCogファイルをアンロードします。", inline=False)
     embed.add_field(name="$join|connect|summon", value="ボイスチャンネルに参加します。", inline=False)
     embed.add_field(name="$leave|disconnect|bye|dc", value="ボイスチャンネルから退出します。", inline=False)
     embed.add_field(name="$play|再生|music [playlist]", value="音楽を再生します。\n googledriveの「music-bot」フォルダ下にあるファイルを全てシャッフル再生します。\n引数にプレイリスト(フォルダ名playlist_XXのXXの部分)の名前を与えることで、そのフォルダ内の音楽を再生します。")
