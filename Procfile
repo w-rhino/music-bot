@@ -1,1 +1,1 @@
-dice-roll: python __main__.py
+music-bot: python __main__.py

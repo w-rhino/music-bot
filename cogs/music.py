@@ -170,6 +170,7 @@ class Music(commands.Cog):
             self.music_fulllist.clear()
             self.music_fulllist = self.drive.ListFile({'q': f'"{folder_id}" in parents and mimeType != "application/vnd.google-apps.folder"'}).GetList()
             
+        status.queue.reset()
         await ctx.send("再生リストを構築中です…")
         for musicfile in self.music_fulllist:
             file_id = musicfile['id']
