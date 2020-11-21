@@ -5,9 +5,8 @@
 [discord.pyとGoogle Drive APIを利用して音楽Botを作った（Dockerでテスト→Herokuにデプロイ） - Qiita](https://qiita.com/ysk0832/items/372e5beb80df7f752bb5)  
 [Pythonで始める録音機能付きDiscord Bot: (4) 音楽ファイルを再生する - Qiita](https://qiita.com/Shirataki2/items/f4ea533d5baf55c4b1d3)  
 
-また、このリポジトリを作成するにあたり 
+また、このリポジトリを作成するにあたり  
 [DiscordBotPortalJP/discordpy-startup](https://github.com/w-rhino/discordpy-startup)  
-  
 をベースに作成しております。
 
 ## 各種ファイル情報
@@ -81,4 +80,20 @@ Googleドライブ内の「music-bot」フォルダの中にある「playlist_ho
   
 音楽ファイルを読み込む際にHerokuの一時ファイルとして保存する仕様上、大きすぎる音楽ファイルはBotが落ちる原因となりますのでご注意ください。
 
-
+### 基本的なコマンド
+その他コマンドなど詳細は$helpコマンドで確認することができます。  
+  
+$join|summon|connect  
+ボイスチャンネルに参加します。  
+  
+$leave|bye|disconnect|dc
+ボイスチャンネルから退出します。  
+  
+$play \[playlistname\]  
+音楽を再生します。フォルダ内全曲シャッフル再生になります。
+  
+$skip  
+次の曲を再生します。  
+  
+$queue|q|playlist  
+再生リストの先頭10件を表示します。
