@@ -111,6 +111,7 @@ class MusicStatus:
     def stop(self):
         self.vc.stop()
 
+    @property
     def is_paused(self):
         return self.vc.is_paused()
 
@@ -137,6 +138,8 @@ class Music(commands.Cog):
         if not ctx.author.voice or not ctx.author.voice.channel:
             return await ctx.send('先にボイスチャンネルに参加してください')
         vc = await ctx.author.voice.channel.connect()
+        if vc is None:
+            return await ctx.send("BotがVoiceClientの情報を正しく取得できませんでした。Botを切断し、時間をおいてから再実行してください。")
         await ctx.send(ctx.author.voice.channel.name + "に参加したよ！")
         self.music_statuses[ctx.guild.id] = MusicStatus(ctx, vc)
 
@@ -153,7 +156,6 @@ class Music(commands.Cog):
     async def play(self, ctx, *args):
         self.drive = GoogleDrive(self.gauth)
         status = self.music_statuses.get(ctx.guild.id)
-
         if status is None:
             await ctx.invoke(self.join)
             await ctx.send("ボイスチャンネルに参加します。")
@@ -179,8 +181,18 @@ class Music(commands.Cog):
             file_name = musicfile['title']
             await status.add_music(file_id, file_name)
 
+        if status.is_playing:
+            status.stop()
         status.shuffle()
         await ctx.send("再生中…")
+
+    @commands.command()
+    async def reset(self, ctx):
+        status = self.music_statuses.get(ctx.guild.id)
+        if status is None:
+            return await ctx.send('Botはまだボイスチャンネルに参加していません')
+        status.queue.reset()
+        return await ctx.send("再生リストを空にしました。")
 
     @commands.command(aliases=["np", "current"])
     async def nowplaying(self, ctx):
@@ -226,7 +238,7 @@ class Music(commands.Cog):
         status = self.music_statuses.get(ctx.guild.id)
         if status is None:
             return await ctx.send('Botはまだボイスチャンネルに参加していません')
-        if status.is_paused():
+        if status.is_paused:
             await ctx.send("既に一時停止中です。")
         else:
             status.pause()
@@ -237,7 +249,7 @@ class Music(commands.Cog):
         status = self.music_statuses.get(ctx.guild.id)
         if status is None:
             return await ctx.send('Botはまだボイスチャンネルに参加していません')
-        if status.is_paused():
+        if status.is_paused:
             await ctx.send("再生を再開します。")
             status.resume()
         else:
