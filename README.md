@@ -54,7 +54,7 @@ Git管理が不要なファイル/ディレクトリの設定ファイルです�
 
 ### Googleドライブの認証
 
-このリポジトリをプルしたら、secretsディレクトリ下にOAuth 2.0 クライアント IDのjsonファイルを入れてください。  
+このリポジトリをforkしたら、secretsディレクトリ下にOAuth 2.0 クライアント IDのjsonファイルを入れてください。  
 またこのjsonファイル名をsettings.yamlのclient_config_fileの欄に書き込んでください。  
 
 なおGoogle Drive APIに関連する準備は  
@@ -68,7 +68,10 @@ confidentials.jsonにはアクセストークンが入っていますので、�
 
 [Discord Bot 最速チュートリアル【Python&Heroku&GitHub】 - Qiita](https://qiita.com/1ntegrale9/items/aa4b373e8895273875a8)  
 に従い進めていき（既にリポジトリがあるため、手順２，３は飛ばして大丈夫です）、デプロイを行ってください。  
-これでBotが上手く起動するはずです。
+これでBotが上手く起動するはずです。  
+デプロイの際に  
+[Discord.py×Herokuで音声ファイルを流した - Qiita](https://qiita.com/coolwind0202/items/542761a1701c1176bc93)  
+ここを参考にビルドパックを追加してください。
 
 ### 音楽ファイルを入れる
 

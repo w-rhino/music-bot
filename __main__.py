@@ -21,6 +21,8 @@ async def on_command_error(ctx, error):
     if 'discord.ext.commands.errors.CommandNotFound' in error_msg:
         await ctx.send('存在しないコマンドだよ！$helpで使えるコマンドを確認してね')
         return
+    if 'discord.errors.ClientException' in error_msg:
+        return await ctx.send('既にボイスチャンネルに入っています。想定された挙動でない場合、Botが情報を正しく取得できていない場合があります。Botの再起動を行い、しばらく待ってから再実行してください。')
     await ctx.send(error_msg)
 
 
