@@ -51,6 +51,8 @@ async def help(ctx):
     embed.add_field(name="$join|connect|summon", value="ボイスチャンネルに参加します。", inline=False)
     embed.add_field(name="$leave|disconnect|bye|dc", value="ボイスチャンネルから退出します。", inline=False)
     embed.add_field(name="$play|再生|music [playlist]", value="音楽を再生します。\n googledriveの「music-bot」フォルダ下にあるファイルを全てシャッフル再生します。\n引数にプレイリスト(フォルダ名playlist_XXのXXの部分)の名前を与えることで、そのフォルダ内の音楽を再生します。")
+    embed.add_field(name="$search|find|once [keyword]", value="曲を検索します。既にBotがボイスチャンネルに入っている場合、検索結果から曲を選択して再生が可能です。", inline=False)
+    embed.add_field(name="$reset", value="再生リストを空にします。", inline=False)
     embed.add_field(name="$nowplaying|nc|current", value="現在再生中のファイル名を表示します。", inline=False)
     embed.add_field(name="$shuffle|sh|mix|random", value="再生リストをシャッフルします。", inline=False)
     embed.add_field(name="$queue|q|playlist", value="プレイリストの先頭10件を表示します。", inline=False)

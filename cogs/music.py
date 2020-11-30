@@ -132,6 +132,33 @@ class Music(commands.Cog):
         self.dir_id = self.drive.ListFile({'q': 'title = "music-bot"'}).GetList()[0]['id']
         self.music_fulllist = []
 
+    def get_all_music(self):
+        all_list = self.get_filelist_recursively(self.dir_id)
+        return all_list
+
+    def get_filelist_recursively(self, parent_id, lst=None):
+        if lst is None:
+            lst = []
+
+        file_list = self.drive.ListFile({'q' : f'"{parent_id}" in parents and trashed = false'}).GetList()
+        lst += [f for f in file_list if f['mimeType'] != 'application/vnd.google-apps.folder']
+
+        for f in file_list:
+            if f['mimeType'] == 'application/vnd.google-apps.folder':
+                self.get_filelist_recursively(f['id'], lst)
+
+        return lst
+
+    def search_music(self, q):
+        results = []
+        all_list = self.get_all_music()
+
+        for d in all_list:
+            if q in d.get('title'):
+                results.append(d)
+
+        return results
+
     @commands.command(aliases=["connect", "summon"])
     async def join(self, ctx):
         # VoiceChannel未参加
@@ -186,6 +213,114 @@ class Music(commands.Cog):
         status.shuffle()
         await ctx.send("再生中…")
 
+    async def display_search(self, ctx, embed, num):
+        msg = await ctx.send(embed=embed)
+        status = self.music_statuses.get(ctx.guild.id)
+
+        emojis = ["⏮️", "⏹️", "⏭️"]
+        emojis_num = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"]
+        emojis_play = emojis_num[:int(num)]
+        for emoji in emojis:
+            await msg.add_reaction(emoji)
+        if status is not None:
+            for emoji in emojis_play:
+                await msg.add_reaction(emoji)
+            await ctx.send("曲を再生したい場合は対応した番号にリアクションしてください。")
+
+        def check(reaction, user):
+            return user == ctx.author and (reaction.emoji in emojis or reaction.emoji in emojis_play) and reaction.message.id == msg.id
+
+        try:
+            reaction, user = await self.bot.wait_for('reaction_add', timeout=120.0, check=check)
+        except asyncio.TimeoutError:
+            await ctx.send("リアクションの受付が終了しました。")
+            return "timeout"
+
+        if reaction.emoji == "⏮️":
+            return "prev"
+        elif reaction.emoji == "⏹️":
+            return "stop"
+        elif reaction.emoji == "⏭️":
+            return "next"
+        if status is not None:
+            if reaction.emoji == "1️⃣":
+                return "1"
+            elif reaction.emoji == "2️⃣":
+                return "2"
+            elif reaction.emoji == "3️⃣":
+                return "3"
+            elif reaction.emoji == "4️⃣":
+                return "4"
+            elif reaction.emoji == "5️⃣":
+                return "5"
+            elif reaction.emoji == "6️⃣":
+                return "6"
+            elif reaction.emoji == "7️⃣":
+                return "7"
+            elif reaction.emoji == "8️⃣":
+                return "8"
+            elif reaction.emoji == "9️⃣":
+                return "9"
+            elif reaction.emoji == "🔟":
+                return "10"
+        else:
+            await ctx.send("曲を再生したい場合、先にBotをボイスチャンネルに入れてください。")
+            return "timeout"
+
+    @commands.command(aliases=["find","once"])
+    async def search(self, ctx, *args):
+        if len(args) == 0:
+            return await ctx.send("引数に検索ワードを入力してください。")
+
+        q = args[0]
+        results = self.search_music(q)
+        if len(results) == 0:
+            return await ctx.send("対象の文字列を含む音楽ファイルは見つかりませんでした。")
+        display_list = []
+
+        for i in range((len(results)//10)+1):
+            display_list.append(results[i*10:(i+1)*10])
+
+        embed_list = []
+
+        for page, part in enumerate(display_list, 1):
+            embed = discord.Embed(title=f"検索結果：{str(page)}ページ目", color=0x00d9ff)
+            for i, data in enumerate(part, 1):
+                embed.add_field(name=str(i), value=data.get('title'), inline=False)
+            else:
+                embed.set_footer(text=f"検索結果：{str(len(results))}件")
+                embed_list.append(embed)
+
+        page = 0
+
+        while True:
+            sign = await self.display_search(ctx, embed_list[page], len(display_list[page]))
+            if sign == "next":
+                page = page + 1
+                if page >= len(embed_list):
+                    page = page - len(embed_list)
+            elif sign == "prev":
+                page = page - 1
+                if page < 0:
+                    page = page + len(embed_list)
+            elif sign == "stop" or sign == "timeout":
+                await ctx.send("検索を終了します。")
+                break
+            else:
+                status = self.music_statuses.get(ctx.guild.id)
+                if status is None:
+                    await ctx.invoke(self.join)
+                    await ctx.send("ボイスチャンネルに参加します。")
+                    status = self.music_statuses.get(ctx.guild.id)
+                seq = int(sign)
+                musicfile = display_list[page][seq-1]
+                file_id = musicfile['id']
+                file_name = musicfile['title']
+                await status.add_music(file_id, file_name)
+                await ctx.send(f"{file_name}を再生リストに追加しました。\n検索を終了します。")
+                break
+
+
     @commands.command()
     async def reset(self, ctx):
         status = self.music_statuses.get(ctx.guild.id)
@@ -199,6 +334,8 @@ class Music(commands.Cog):
         status = self.music_statuses.get(ctx.guild.id)
         if status is None:
             return await ctx.send('Botはまだボイスチャンネルに参加していません')
+        if not status.is_playing:
+            return await ctx.send('現在再生している曲はありません。')
         embed = discord.Embed(color=0x30ff30)
         embed.add_field(name="nowplaying", value=status.current_title, inline=False)
         await ctx.send(embed=embed)
@@ -230,8 +367,14 @@ class Music(commands.Cog):
         status = self.music_statuses.get(ctx.guild.id)
         if status is None:
             return await ctx.send('Botはまだボイスチャンネルに参加していません')
-        await ctx.send("次の曲を再生します。")
+        await ctx.send("現在再生中の曲を停止します。")
+        queue = status.get_list()
+        if len(queue) == 0:
+            await ctx.send('なお、現在キューは空になっています。playコマンド等で次の曲を追加してください。')
+        else:
+            await ctx.send("次の曲を再生します。")
         status.stop()
+
 
     @commands.command()
     async def pause(self, ctx):
@@ -269,6 +412,8 @@ class Music(commands.Cog):
         if status is None:
             return await ctx.send('先にボイスチャンネルに参加してください')
         queue = status.get_list()
+        if len(queue) == 0:
+            return await ctx.send('現在キューは空になっています。playコマンド等で曲を追加してください。')
         embed = discord.Embed(title='現在の再生リスト(先頭10曲分)', color=0xffa030)
         embed.add_field(name="Now playing", value=status.current_title, inline=False)
 
