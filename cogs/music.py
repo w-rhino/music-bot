@@ -100,7 +100,7 @@ class MusicStatus:
         self.queue.reset()
         if os.path.exists(self.music_path):
             os.remove(self.music_path)
-        if self.vc:
+        if self.vc is not None:
             await self.vc.disconnect()
             self.vc = None
 
