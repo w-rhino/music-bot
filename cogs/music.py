@@ -140,7 +140,7 @@ class Music(commands.Cog):
         if lst is None:
             lst = []
 
-        file_list = self.drive.ListFile({'q' : f'"{parent_id}" in parents and trashed = false'}).GetList()
+        file_list = self.drive.ListFile({'q': f'"{parent_id}" in parents and trashed = false'}).GetList()
         lst += [f for f in file_list if f['mimeType'] != 'application/vnd.google-apps.folder']
 
         for f in file_list:
@@ -266,7 +266,7 @@ class Music(commands.Cog):
             await ctx.send("check関数に関連するエラーです。開発者に報告してください。")
             return "timeout"
 
-    @commands.command(aliases=["find","once"])
+    @commands.command(aliases=["find", "once"])
     async def search(self, ctx, *args):
         if len(args) == 0:
             return await ctx.send("引数に検索ワードを入力してください。")
@@ -277,8 +277,8 @@ class Music(commands.Cog):
             return await ctx.send("対象の文字列を含む音楽ファイルは見つかりませんでした。")
         display_list = []
 
-        for i in range((len(results)//10)+1):
-            display_list.append(results[i*10:(i+1)*10])
+        for i in range((len(results) // 10) + 1):
+            display_list.append(results[i * 10:(i + 1) * 10])
 
         embed_list = []
 
@@ -324,13 +324,12 @@ class Music(commands.Cog):
                     await ctx.send("ボイスチャンネルに参加します。")
                     status = self.music_statuses.get(ctx.guild.id)
                 seq = int(sign)
-                musicfile = display_list[page][seq-1]
+                musicfile = display_list[page][seq - 1]
                 file_id = musicfile['id']
                 file_name = musicfile['title']
                 await status.add_music(file_id, file_name)
                 await ctx.send(f"{file_name}を再生リストに追加しました。\n検索を終了します。")
                 break
-
 
     @commands.command()
     async def reset(self, ctx):
@@ -385,7 +384,6 @@ class Music(commands.Cog):
         else:
             await ctx.send("次の曲を再生します。")
         status.stop()
-
 
     @commands.command()
     async def pause(self, ctx):
@@ -452,7 +450,7 @@ class Music(commands.Cog):
         display_list = []
 
         for i in range((len(queue)//10)+1):
-            display_list.append(queue[i*10:(i+1)*10])
+            display_list.append(queue[i * 10:(i + 1) * 10])
 
         embed_list = []
 
