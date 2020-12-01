@@ -20,7 +20,7 @@ from pydrive.drive import GoogleDrive
 
 class MusicQueue(asyncio.Queue):
     def __init__(self):
-        super().__init__(100)
+        super().__init__(200)
 
     def __getitem__(self, index):
         return self._queue[index]
@@ -215,17 +215,15 @@ class Music(commands.Cog):
 
     async def display_search(self, ctx, embed, num):
         msg = await ctx.send(embed=embed)
-        status = self.music_statuses.get(ctx.guild.id)
 
-        emojis = ["⏮️", "⏹️", "⏭️"]
+        emojis = ["⏮️", "⏹️", "▶️", "⏭️"]
         emojis_num = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"]
         emojis_play = emojis_num[:int(num)]
         for emoji in emojis:
             await msg.add_reaction(emoji)
-        if status is not None:
-            for emoji in emojis_play:
-                await msg.add_reaction(emoji)
-            await ctx.send("曲を再生したい場合は対応した番号にリアクションしてください。")
+        for emoji in emojis_play:
+            await msg.add_reaction(emoji)
+        await ctx.send("曲を再生したい場合は対応した番号にリアクションしてください。")
 
         def check(reaction, user):
             return user == ctx.author and (reaction.emoji in emojis or reaction.emoji in emojis_play) and reaction.message.id == msg.id
@@ -240,31 +238,32 @@ class Music(commands.Cog):
             return "prev"
         elif reaction.emoji == "⏹️":
             return "stop"
+        elif reaction.emoji == "▶️":
+            return "play"
         elif reaction.emoji == "⏭️":
             return "next"
-        if status is not None:
-            if reaction.emoji == "1️⃣":
-                return "1"
-            elif reaction.emoji == "2️⃣":
-                return "2"
-            elif reaction.emoji == "3️⃣":
-                return "3"
-            elif reaction.emoji == "4️⃣":
-                return "4"
-            elif reaction.emoji == "5️⃣":
-                return "5"
-            elif reaction.emoji == "6️⃣":
-                return "6"
-            elif reaction.emoji == "7️⃣":
-                return "7"
-            elif reaction.emoji == "8️⃣":
-                return "8"
-            elif reaction.emoji == "9️⃣":
-                return "9"
-            elif reaction.emoji == "🔟":
-                return "10"
+        elif reaction.emoji == "1️⃣":
+            return "1"
+        elif reaction.emoji == "2️⃣":
+            return "2"
+        elif reaction.emoji == "3️⃣":
+            return "3"
+        elif reaction.emoji == "4️⃣":
+            return "4"
+        elif reaction.emoji == "5️⃣":
+            return "5"
+        elif reaction.emoji == "6️⃣":
+            return "6"
+        elif reaction.emoji == "7️⃣":
+            return "7"
+        elif reaction.emoji == "8️⃣":
+            return "8"
+        elif reaction.emoji == "9️⃣":
+            return "9"
+        elif reaction.emoji == "🔟":
+            return "10"
         else:
-            await ctx.send("曲を再生したい場合、先にBotをボイスチャンネルに入れてください。")
+            await ctx.send("check関数に関連するエラーです。開発者に報告してください。")
             return "timeout"
 
     @commands.command(aliases=["find","once"])
@@ -288,7 +287,7 @@ class Music(commands.Cog):
             for i, data in enumerate(part, 1):
                 embed.add_field(name=str(i), value=data.get('title'), inline=False)
             else:
-                embed.set_footer(text=f"検索結果：{str(len(results))}件")
+                embed.set_footer(text=f"検索結果：{str(len(results))}件\n⏮️：前ページ ⏹️：検索終了 ▶️：検索結果をキューに入れる ⏭️：次ページ")
                 embed_list.append(embed)
 
         page = 0
@@ -303,6 +302,18 @@ class Music(commands.Cog):
                 page = page - 1
                 if page < 0:
                     page = page + len(embed_list)
+            elif sign == "play":
+                status = self.music_statuses.get(ctx.guild.id)
+                if status is None:
+                    await ctx.invoke(self.join)
+                    await ctx.send("ボイスチャンネルに参加します。")
+                    status = self.music_statuses.get(ctx.guild.id)
+                for musicfile in results:
+                    file_id = musicfile['id']
+                    file_name = musicfile['title']
+                    await status.add_music(file_id, file_name)
+                await ctx.send("検索結果をキューに入れました。\n検索を終了します。")
+                break
             elif sign == "stop" or sign == "timeout":
                 await ctx.send("検索を終了します。")
                 break
@@ -406,6 +417,29 @@ class Music(commands.Cog):
         status.shuffle()
         await ctx.send("再生リストをシャッフルしました。")
 
+    async def display_queue(self, ctx, embed):
+        msg = await ctx.send(embed=embed)
+
+        emojis = ["⏮️", "⏹️", "⏭️"]
+        for emoji in emojis:
+            await msg.add_reaction(emoji)
+
+        def check(reaction, user):
+            return user == ctx.author and reaction.emoji in emojis and reaction.message.id == msg.id
+
+        try:
+            reaction, user = await self.bot.wait_for('reaction_add', timeout=120.0, check=check)
+        except asyncio.TimeoutError:
+            await ctx.send("リアクションの受付が終了しました。")
+            return "timeout"
+
+        if reaction.emoji == "⏮️":
+            return "prev"
+        elif reaction.emoji == "⏹️":
+            return "stop"
+        elif reaction.emoji == "⏭️":
+            return "next"
+
     @commands.command(aliases=["q", "playlist"])
     async def queue(self, ctx):
         status = self.music_statuses.get(ctx.guild.id)
@@ -414,17 +448,37 @@ class Music(commands.Cog):
         queue = status.get_list()
         if len(queue) == 0:
             return await ctx.send('現在キューは空になっています。playコマンド等で曲を追加してください。')
-        embed = discord.Embed(title='現在の再生リスト(先頭10曲分)', color=0xffa030)
-        embed.add_field(name="Now playing", value=status.current_title, inline=False)
 
-        msg = ""
-        for i, (file_id, file_title) in enumerate(queue, 1):
-            msg = msg + str(i) + ".\t" + file_title + "\n"
-            if i > 9:
+        display_list = []
+
+        for i in range((len(queue)//10)+1):
+            display_list.append(queue[i*10:(i+1)*10])
+
+        embed_list = []
+
+        for page, part in enumerate(display_list, 1):
+            embed = discord.Embed(title=f"{str(page)}ページ目", color=0xffa030)
+            for i, data in enumerate(part, 1):
+                embed.add_field(name=str(i), value=data[1], inline=False)
+            else:
+                embed.set_footer(text=f"現在のキュー：{str(len(queue))}件\n⏮️：前ページ ⏹️：観覧終了 ⏭️：次ページ")
+                embed_list.append(embed)
+
+        page = 0
+
+        while True:
+            sign = await self.display_queue(ctx, embed_list[page])
+            if sign == "next":
+                page = page + 1
+                if page >= len(embed_list):
+                    page = page - len(embed_list)
+            elif sign == "prev":
+                page = page - 1
+                if page < 0:
+                    page = page + len(embed_list)
+            else:
+                await ctx.send("観覧を終了します。")
                 break
-        embed.add_field(name="次曲以降", value=msg, inline=False)
-        embed.set_footer(text="現在のキューは" + str(len(queue)) + "件です。")
-        await ctx.send(embed=embed)
 
 
 def setup(bot):
