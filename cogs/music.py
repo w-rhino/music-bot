@@ -449,7 +449,7 @@ class Music(commands.Cog):
 
         display_list = []
 
-        for i in range((len(queue)//10)+1):
+        for i in range((len(queue) // 10) + 1):
             display_list.append(queue[i * 10:(i + 1) * 10])
 
         embed_list = []
